@@ -1,0 +1,23 @@
+{
+  "name": "@myagent/application",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "用户用例、命令幂等与事务协调",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@myagent/contracts": "workspace:*",
+    "@myagent/kernel": "workspace:*",
+    "@myagent/state": "workspace:*",
+    "@myagent/content": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}

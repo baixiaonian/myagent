@@ -1,0 +1,23 @@
+{
+  "name": "@myagent/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "后端唯一装配入口；当前仅启动提示",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@myagent/application": "workspace:*",
+    "@myagent/kernel": "workspace:*",
+    "@myagent/state": "workspace:*",
+    "@myagent/content": "workspace:*",
+    "@myagent/adapters": "workspace:*",
+    "@myagent/extensions": "workspace:*",
+    "@myagent/orchestration": "workspace:*",
+    "@myagent/observability": "workspace:*"
+  }
+}

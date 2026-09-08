@@ -1,0 +1,50 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/contracts"
+    },
+    {
+      "path": "packages/sdk"
+    },
+    {
+      "path": "packages/kernel"
+    },
+    {
+      "path": "packages/state"
+    },
+    {
+      "path": "packages/content"
+    },
+    {
+      "path": "packages/application"
+    },
+    {
+      "path": "packages/extensions"
+    },
+    {
+      "path": "packages/orchestration"
+    },
+    {
+      "path": "packages/observability"
+    },
+    {
+      "path": "packages/adapters"
+    },
+    {
+      "path": "packages/testing"
+    },
+    {
+      "path": "apps/web"
+    },
+    {
+      "path": "apps/server"
+    },
+    {
+      "path": "apps/cli"
+    },
+    {
+      "path": "apps/worker"
+    }
+  ]
+}

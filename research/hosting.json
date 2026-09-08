@@ -1,0 +1,10 @@
+{
+  "provider": "KnowBit",
+  "page_id": 24,
+  "share_link": "/p/BssJzfkhTv9QnYXmpe0qEh",
+  "verified_url": "https://knowbit.cn/p/BssJzfkhTv9QnYXmpe0qEh",
+  "access": "public",
+  "source": "agent-architecture.html",
+  "sha256": "b0a28cd51d849114e85dae14f684d636e923fd87a8f6b3b1ded13d8822b13da2",
+  "verification": "HTTP 200 and browser loaded architecture content"
+}

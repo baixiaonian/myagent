@@ -1,0 +1,23 @@
+{
+  "name": "@myagent/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Web 工作台入口；当前仅静态工程占位页",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc -b",
+    "dev": "vite --host 127.0.0.1",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@myagent/sdk": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "vite": "8.2.2",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7"
+  }
+}

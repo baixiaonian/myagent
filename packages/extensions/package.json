@@ -1,0 +1,21 @@
+{
+  "name": "@myagent/extensions",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "插件清单、作用域注册、Skill 与 Hook 生命周期",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@myagent/contracts": "workspace:*",
+    "@myagent/kernel": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}

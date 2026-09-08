@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.DS_Store
+__pycache__/
+*.pyc
+.myagent/
+# Read-only research checkouts are fetched independently and are not submodules.
+/research/upstream/
+/research/report-inline.js
+
+.cache/

@@ -1,0 +1,7 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Packages with install scripts must be reviewed before they are added here.
+allowBuilds:
+  esbuild: true

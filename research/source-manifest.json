@@ -1,0 +1,239 @@
+{
+  "retrieved": "2026-09-07",
+  "snapshots": {
+    "pi": {
+      "repo": "earendil-works/pi",
+      "sha": "e687434a60174db1a9c961d973881a7a851a0597"
+    },
+    "codex": {
+      "repo": "openai/codex",
+      "sha": "5ecb3afd1bf405149e2159bfda50093b0c1b5fab"
+    },
+    "deepseek-harness": {
+      "repo": "deepseek-ai/deepseek-harness",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215"
+    }
+  },
+  "sources": [
+    {
+      "id": "P1",
+      "repository": "pi",
+      "path": "packages/agent/src/agent-loop.ts",
+      "start": 158,
+      "end": 308,
+      "title": "循环与模型边界",
+      "finding": "runLoop 处理工具回合、steering、follow-up；transformContext 先于 convertToLlm。",
+      "sha": "e687434a60174db1a9c961d973881a7a851a0597",
+      "url": "https://github.com/earendil-works/pi/blob/e687434a60174db1a9c961d973881a7a851a0597/packages/agent/src/agent-loop.ts#L158-L308"
+    },
+    {
+      "id": "P2",
+      "repository": "pi",
+      "path": "packages/agent/src/agent-loop.ts",
+      "start": 366,
+      "end": 426,
+      "title": "截断参数与并发",
+      "finding": "输出长度截断时不执行工具；工具 executionMode 可以要求串行。",
+      "sha": "e687434a60174db1a9c961d973881a7a851a0597",
+      "url": "https://github.com/earendil-works/pi/blob/e687434a60174db1a9c961d973881a7a851a0597/packages/agent/src/agent-loop.ts#L366-L426"
+    },
+    {
+      "id": "P3",
+      "repository": "pi",
+      "path": "packages/coding-agent/src/core/session-manager.ts",
+      "start": 840,
+      "end": 872,
+      "title": "树状会话",
+      "finding": "会话条目通过 id / parentId 构成分支；上下文从当前分支生成。",
+      "sha": "e687434a60174db1a9c961d973881a7a851a0597",
+      "url": "https://github.com/earendil-works/pi/blob/e687434a60174db1a9c961d973881a7a851a0597/packages/coding-agent/src/core/session-manager.ts#L840-L872"
+    },
+    {
+      "id": "P4",
+      "repository": "pi",
+      "path": "packages/agent/test/agent-loop.test.ts",
+      "start": 444,
+      "end": 505,
+      "title": "Hook 修改参数的边界",
+      "finding": "测试明确允许 beforeToolCall 修改后的参数直接执行；本方案改为最终参数重新校验。",
+      "sha": "e687434a60174db1a9c961d973881a7a851a0597",
+      "url": "https://github.com/earendil-works/pi/blob/e687434a60174db1a9c961d973881a7a851a0597/packages/agent/test/agent-loop.test.ts#L444-L505"
+    },
+    {
+      "id": "P5",
+      "repository": "pi",
+      "path": "packages/ai/src/types.ts",
+      "start": 1,
+      "end": 90,
+      "title": "模型协议与厂商分离",
+      "finding": "Api、ProviderId 等类型将协议类别与模型提供方区分。",
+      "sha": "e687434a60174db1a9c961d973881a7a851a0597",
+      "url": "https://github.com/earendil-works/pi/blob/e687434a60174db1a9c961d973881a7a851a0597/packages/ai/src/types.ts#L1-L90"
+    },
+    {
+      "id": "C1",
+      "repository": "codex",
+      "path": "codex-rs/core/src/session/turn.rs",
+      "start": 335,
+      "end": 395,
+      "title": "每轮冻结执行视图",
+      "finding": "同一步的上下文、工具暴露与工具执行共享 StepContext。",
+      "sha": "5ecb3afd1bf405149e2159bfda50093b0c1b5fab",
+      "url": "https://github.com/openai/codex/blob/5ecb3afd1bf405149e2159bfda50093b0c1b5fab/codex-rs/core/src/session/turn.rs#L335-L395"
+    },
+    {
+      "id": "C2",
+      "repository": "codex",
+      "path": "codex-rs/core/src/tools/router.rs",
+      "start": 73,
+      "end": 145,
+      "title": "工具路由",
+      "finding": "ToolRouter 持有模型可见规格和对应可执行注册表。",
+      "sha": "5ecb3afd1bf405149e2159bfda50093b0c1b5fab",
+      "url": "https://github.com/openai/codex/blob/5ecb3afd1bf405149e2159bfda50093b0c1b5fab/codex-rs/core/src/tools/router.rs#L73-L145"
+    },
+    {
+      "id": "C3",
+      "repository": "codex",
+      "path": "codex-rs/core/src/tools/orchestrator.rs",
+      "start": 1,
+      "end": 145,
+      "title": "执行治理",
+      "finding": "ToolOrchestrator 集中处理审批、沙箱选择及执行尝试。",
+      "sha": "5ecb3afd1bf405149e2159bfda50093b0c1b5fab",
+      "url": "https://github.com/openai/codex/blob/5ecb3afd1bf405149e2159bfda50093b0c1b5fab/codex-rs/core/src/tools/orchestrator.rs#L1-L145"
+    },
+    {
+      "id": "C4",
+      "repository": "codex",
+      "path": "codex-rs/app-server/README.md",
+      "start": 19,
+      "end": 107,
+      "title": "前后端协议",
+      "finding": "双向协议、Thread / Turn / Item、流式通知，以及有界队列与背压。",
+      "sha": "5ecb3afd1bf405149e2159bfda50093b0c1b5fab",
+      "url": "https://github.com/openai/codex/blob/5ecb3afd1bf405149e2159bfda50093b0c1b5fab/codex-rs/app-server/README.md#L19-L107"
+    },
+    {
+      "id": "C5",
+      "repository": "codex",
+      "path": "codex-rs/rollout/src/recorder.rs",
+      "start": 90,
+      "end": 118,
+      "title": "会话血缘",
+      "finding": "记录会话来源、父任务、fork 位置及动态工具等元数据。",
+      "sha": "5ecb3afd1bf405149e2159bfda50093b0c1b5fab",
+      "url": "https://github.com/openai/codex/blob/5ecb3afd1bf405149e2159bfda50093b0c1b5fab/codex-rs/rollout/src/recorder.rs#L90-L118"
+    },
+    {
+      "id": "D1",
+      "repository": "deepseek-harness",
+      "path": "packages/core/agent-loop/src/agent.ts",
+      "start": 258,
+      "end": 343,
+      "title": "运行状态与结束原因",
+      "finding": "每轮有 turn / step 边界、取消信号和结构化结束原因。",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/core/agent-loop/src/agent.ts#L258-L343"
+    },
+    {
+      "id": "D2",
+      "repository": "deepseek-harness",
+      "path": "packages/core/agent-loop/src/agent.ts",
+      "start": 485,
+      "end": 587,
+      "title": "冻结模型请求",
+      "finding": "组装请求、记录请求头、绑定适配器并冻结请求对象。",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/core/agent-loop/src/agent.ts#L485-L587"
+    },
+    {
+      "id": "D3",
+      "repository": "deepseek-harness",
+      "path": "packages/core/tools/src/index.ts",
+      "start": 1091,
+      "end": 1115,
+      "title": "单向收紧的 guard",
+      "finding": "后置 guard 允许拒绝，其他 guard 不能把既有拒绝改成允许。",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/core/tools/src/index.ts#L1091-L1115"
+    },
+    {
+      "id": "D4",
+      "repository": "deepseek-harness",
+      "path": "packages/core/agent-loop/src/tool-calls.ts",
+      "start": 1,
+      "end": 101,
+      "title": "有界并发与顺序归并",
+      "finding": "独占调用形成屏障；并行调用使用有界池；结果按模型顺序提交。",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/core/agent-loop/src/tool-calls.ts#L1-L101"
+    },
+    {
+      "id": "D5",
+      "repository": "deepseek-harness",
+      "path": "packages/core/session/src/repair.ts",
+      "start": 1,
+      "end": 75,
+      "title": "崩溃恢复语义",
+      "finding": "区分 TOOL_NOT_STARTED 和 TOOL_OUTCOME_UNKNOWN，补齐未闭合记录。",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/core/session/src/repair.ts#L1-L75"
+    },
+    {
+      "id": "D6",
+      "repository": "deepseek-harness",
+      "path": "packages/core/session/src/index.ts",
+      "start": 1,
+      "end": 96,
+      "title": "会话事件与持久化",
+      "finding": "追加式会话日志、派生历史及独立的 flush 持久化检查点。",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/core/session/src/index.ts#L1-L96"
+    },
+    {
+      "id": "D7",
+      "repository": "deepseek-harness",
+      "path": "packages/skill/skill/src/index.ts",
+      "start": 1,
+      "end": 112,
+      "title": "Skill 目录与提供者",
+      "finding": "接口、实际提供者、摘要目录与按需正文读取分离。",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/skill/skill/src/index.ts#L1-L112"
+    },
+    {
+      "id": "D8",
+      "repository": "deepseek-harness",
+      "path": "vendor/cordis/src/service.ts",
+      "start": 1,
+      "end": 67,
+      "title": "服务生命周期",
+      "finding": "注册服务与所属 fiber 绑定，卸载时自动清理。",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/vendor/cordis/src/service.ts#L1-L67"
+    },
+    {
+      "id": "D9",
+      "repository": "deepseek-harness",
+      "path": "packages/hooks/hook-protocol/src/runner.ts",
+      "start": 1,
+      "end": 85,
+      "title": "命令 Hook 执行",
+      "finding": "命令 Hook 走 ShellExecutor，携带取消信号与超时。",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/hooks/hook-protocol/src/runner.ts#L1-L85"
+    },
+    {
+      "id": "D10",
+      "repository": "deepseek-harness",
+      "path": "docs/architecture.md",
+      "start": 7,
+      "end": 29,
+      "title": "组合方式",
+      "finding": "服务、事件、可撤销效果及按 profile / bundle 组装的插件树。",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+      "url": "https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/docs/architecture.md#L7-L29"
+    }
+  ]
+}

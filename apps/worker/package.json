@@ -1,0 +1,17 @@
+{
+  "name": "@myagent/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "隔离执行入口；当前仅启动提示",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@myagent/contracts": "workspace:*",
+    "@myagent/adapters": "workspace:*"
+  }
+}

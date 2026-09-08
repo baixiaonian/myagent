@@ -1,0 +1,6 @@
+# 配置
+
+`modules.json` 是当前工程检查使用的模块清单，维护允许依赖和骨架状态。
+`defaults.yaml`、`profiles/`、`plugins.lock.json` 是目标位置，尚无运行时加载器。
+策略优先级、密钥引用和配置快照见 [架构概览](../docs/architecture/overview.md)。
+不要在配置中保存实际令牌。新增运行时配置时定义 Schema、默认值、覆盖规则和迁移方式。

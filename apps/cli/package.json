@@ -1,0 +1,16 @@
+{
+  "name": "@myagent/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "通过 SDK 访问应用；当前仅启动提示",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@myagent/sdk": "workspace:*"
+  }
+}

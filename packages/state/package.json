@@ -1,0 +1,20 @@
+{
+  "name": "@myagent/state",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "会话、任务、运行与调用记录的状态所有权",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@myagent/contracts": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}

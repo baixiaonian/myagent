@@ -1,0 +1,3 @@
+# local 部署配置预留；当前不加载。
+schemaVersion: 1
+profile: local

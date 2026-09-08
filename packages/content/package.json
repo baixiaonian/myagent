@@ -1,0 +1,20 @@
+{
+  "name": "@myagent/content",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "记忆、来源材料、检索与版本化产物",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@myagent/contracts": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}

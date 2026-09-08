@@ -1,0 +1,766 @@
+{
+  "width": 1540,
+  "height": 1500,
+  "nodes": [
+    {
+      "id": "ui",
+      "x": 440,
+      "y": 80,
+      "w": 660,
+      "h": 100,
+      "title": "01  产品入口 · Web / CLI / SDK",
+      "lines": [
+        "对话与任务列表 · 运行进度 · 人工交互 · 产物预览与下载"
+      ],
+      "tone": "green"
+    },
+    {
+      "id": "app",
+      "x": 440,
+      "y": 235,
+      "w": 660,
+      "h": 110,
+      "title": "02  Application · 应用服务",
+      "lines": [
+        "身份与工作区 / 命令幂等 / 会话写入队列",
+        "start · steer · followUp · cancel · resume · 事件订阅"
+      ],
+      "tone": "green"
+    },
+    {
+      "id": "runtime",
+      "x": 420,
+      "y": 430,
+      "w": 710,
+      "h": 115,
+      "title": "03  Agent Runtime · 唯一运行循环",
+      "lines": [
+        "Run / Step 状态机 · Inbox · 预算与停止条件 · 取消树",
+        "每步冻结配置、工具目录与上下文版本；完成后检查验收"
+      ],
+      "tone": "green"
+    },
+    {
+      "id": "context",
+      "x": 420,
+      "y": 605,
+      "w": 330,
+      "h": 125,
+      "title": "04  Context Builder",
+      "lines": [
+        "指令层级 / 历史分支 / Skill",
+        "检索与记忆 / token 预算",
+        "压缩摘要 + 来源引用 + 快照"
+      ],
+      "tone": "green"
+    },
+    {
+      "id": "model",
+      "x": 800,
+      "y": 605,
+      "w": 330,
+      "h": 125,
+      "title": "05  Model Gateway",
+      "lines": [
+        "能力表 / 模型路由 / 厂商适配",
+        "统一消息、工具调用与流事件",
+        "超时 / 重试 / 用量与成本"
+      ],
+      "tone": "green"
+    },
+    {
+      "id": "tools",
+      "x": 420,
+      "y": 810,
+      "w": 330,
+      "h": 135,
+      "title": "06  Tool System",
+      "lines": [
+        "Registry / Schema / Hook 管线",
+        "最终参数冻结 / 资源锁",
+        "有界并发 / 结果归并与截断"
+      ],
+      "tone": "orange"
+    },
+    {
+      "id": "policy",
+      "x": 800,
+      "y": 810,
+      "w": 330,
+      "h": 135,
+      "title": "07  Policy + Interaction",
+      "lines": [
+        "主体、资源、效果与授权范围",
+        "allow / deny / ask；等待落库",
+        "审批绑定参数摘要；恢复再校验"
+      ],
+      "tone": "orange"
+    },
+    {
+      "id": "execution",
+      "x": 420,
+      "y": 1100,
+      "w": 710,
+      "h": 90,
+      "title": "08  Execution Gateway · 执行网关",
+      "lines": [
+        "能力授权 / workspaceRef / deadline / 凭证引用 / dispatch · cancel · receipt"
+      ],
+      "tone": "orange"
+    },
+    {
+      "id": "worker",
+      "x": 420,
+      "y": 1260,
+      "w": 330,
+      "h": 115,
+      "title": "执行 Worker / 容器",
+      "lines": [
+        "文件读写 · Shell · Playwright",
+        "进程回收 / 文件与网络隔离",
+        "主进程与执行环境分离"
+      ],
+      "tone": "orange"
+    },
+    {
+      "id": "connectors",
+      "x": 800,
+      "y": 1260,
+      "w": 330,
+      "h": 115,
+      "title": "外部连接器 / MCP",
+      "lines": [
+        "MCP stdio 或 Streamable HTTP",
+        "HTTP API · 云端工具",
+        "返回结构化结果与外部回执"
+      ],
+      "tone": "orange"
+    },
+    {
+      "id": "session",
+      "x": 35,
+      "y": 430,
+      "w": 300,
+      "h": 120,
+      "title": "Session / Run / Invocation",
+      "lines": [
+        "历史分支 / 运行检查点",
+        "调用意图 / 参数摘要 / 回执",
+        "每个 Session 单写者"
+      ],
+      "tone": "purple"
+    },
+    {
+      "id": "task",
+      "x": 35,
+      "y": 595,
+      "w": 300,
+      "h": 115,
+      "title": "Task / Plan",
+      "lines": [
+        "目标 / 约束 / 验收标准",
+        "计划版本 / 子任务关联",
+        "一项 Task 可以跨多次 Run"
+      ],
+      "tone": "purple"
+    },
+    {
+      "id": "content",
+      "x": 35,
+      "y": 770,
+      "w": 300,
+      "h": 145,
+      "title": "Content Services",
+      "lines": [
+        "Memory：长期事实与偏好",
+        "Retrieval：导入、切块、来源",
+        "Artifact：文件、版本与验证",
+        "资料包通过 ContentPort 读取"
+      ],
+      "tone": "purple"
+    },
+    {
+      "id": "store",
+      "x": 35,
+      "y": 1070,
+      "w": 300,
+      "h": 145,
+      "title": "Storage Adapters",
+      "lines": [
+        "SQLite：状态 + 持久事件事务",
+        "文件：原始材料 / 产物 / 大输出",
+        "FTS5：可重建全文索引",
+        "JSONL：导出与诊断"
+      ],
+      "tone": "purple"
+    },
+    {
+      "id": "orchestration",
+      "x": 1205,
+      "y": 235,
+      "w": 300,
+      "h": 140,
+      "title": "Orchestration",
+      "lines": [
+        "Workflow / Scheduler / Jobs",
+        "Subagents / Mailbox",
+        "统一调用 RunCommandPort",
+        "子任务独立 Session 与预算"
+      ],
+      "tone": "purple"
+    },
+    {
+      "id": "extensions",
+      "x": 1205,
+      "y": 430,
+      "w": 300,
+      "h": 145,
+      "title": "Extension Host",
+      "lines": [
+        "manifest / API 版本 / 依赖排序",
+        "activate / dispose / 注册作用域",
+        "注册模型、工具、Skill 与 Hook",
+        "活动 Run 固定能力版本"
+      ],
+      "tone": "purple"
+    },
+    {
+      "id": "skills",
+      "x": 1205,
+      "y": 635,
+      "w": 300,
+      "h": 110,
+      "title": "Skill Catalog + Hooks",
+      "lines": [
+        "Skill：摘要发现、按需读正文",
+        "Hook：固定时点、固定返回值",
+        "脚本动作进入执行治理"
+      ],
+      "tone": "purple"
+    },
+    {
+      "id": "credentials",
+      "x": 1205,
+      "y": 810,
+      "w": 300,
+      "h": 135,
+      "title": "Credentials + Identity",
+      "lines": [
+        "本地身份 / 远端 OIDC",
+        "操作系统凭证库 / Secret",
+        "按调用范围注入凭证",
+        "原始密钥不进入上下文"
+      ],
+      "tone": "purple"
+    },
+    {
+      "id": "observe",
+      "x": 1205,
+      "y": 1100,
+      "w": 300,
+      "h": 165,
+      "title": "Observability + Evals",
+      "lines": [
+        "runId → stepId → toolCallId",
+        "结构化日志 / Trace / 指标",
+        "授权与执行审计独立持久化",
+        "任务质量 / 成本 / 时间基线",
+        "订阅脱敏事件，覆盖全部模块"
+      ],
+      "tone": "purple"
+    }
+  ],
+  "edges": [
+    [
+      "ui",
+      "app",
+      [
+        [
+          770,
+          180
+        ],
+        [
+          770,
+          235
+        ]
+      ],
+      "命令 ↓ / SSE 事件 ↑",
+      [
+        790,
+        213
+      ],
+      false
+    ],
+    [
+      "orchestration",
+      "app",
+      [
+        [
+          1205,
+          290
+        ],
+        [
+          1100,
+          290
+        ]
+      ],
+      "",
+      null,
+      false
+    ],
+    [
+      "app",
+      "runtime",
+      [
+        [
+          770,
+          345
+        ],
+        [
+          770,
+          430
+        ]
+      ],
+      "启动 / 恢复 Run",
+      [
+        790,
+        391
+      ],
+      false
+    ],
+    [
+      "runtime",
+      "context",
+      [
+        [
+          585,
+          545
+        ],
+        [
+          585,
+          605
+        ]
+      ],
+      "准备资料",
+      [
+        600,
+        580
+      ],
+      false
+    ],
+    [
+      "context",
+      "model",
+      [
+        [
+          750,
+          665
+        ],
+        [
+          800,
+          665
+        ]
+      ],
+      "",
+      null,
+      false
+    ],
+    [
+      "model",
+      "runtime",
+      [
+        [
+          1130,
+          665
+        ],
+        [
+          1150,
+          665
+        ],
+        [
+          1150,
+          487
+        ],
+        [
+          1130,
+          487
+        ]
+      ],
+      "",
+      null,
+      true
+    ],
+    [
+      "runtime",
+      "tools",
+      [
+        [
+          765,
+          545
+        ],
+        [
+          765,
+          775
+        ],
+        [
+          585,
+          775
+        ],
+        [
+          585,
+          810
+        ]
+      ],
+      "工具请求",
+      [
+        777,
+        759
+      ],
+      false
+    ],
+    [
+      "tools",
+      "policy",
+      [
+        [
+          750,
+          877
+        ],
+        [
+          800,
+          877
+        ]
+      ],
+      "",
+      null,
+      false
+    ],
+    [
+      "policy",
+      "execution",
+      [
+        [
+          965,
+          945
+        ],
+        [
+          965,
+          1030
+        ],
+        [
+          965,
+          1100
+        ]
+      ],
+      "携带执行授权",
+      [
+        980,
+        1020
+      ],
+      false
+    ],
+    [
+      "execution",
+      "worker",
+      [
+        [
+          585,
+          1190
+        ],
+        [
+          585,
+          1260
+        ]
+      ],
+      "受限执行",
+      [
+        600,
+        1230
+      ],
+      false
+    ],
+    [
+      "execution",
+      "connectors",
+      [
+        [
+          965,
+          1190
+        ],
+        [
+          965,
+          1260
+        ]
+      ],
+      "协议调用",
+      [
+        980,
+        1230
+      ],
+      false
+    ],
+    [
+      "execution",
+      "tools",
+      [
+        [
+          420,
+          1145
+        ],
+        [
+          395,
+          1145
+        ],
+        [
+          395,
+          907
+        ],
+        [
+          420,
+          907
+        ]
+      ],
+      "",
+      null,
+      true
+    ],
+    [
+      "tools",
+      "runtime",
+      [
+        [
+          420,
+          845
+        ],
+        [
+          405,
+          845
+        ],
+        [
+          405,
+          507
+        ],
+        [
+          420,
+          507
+        ]
+      ],
+      "",
+      null,
+      true
+    ],
+    [
+      "runtime",
+      "session",
+      [
+        [
+          420,
+          470
+        ],
+        [
+          335,
+          470
+        ]
+      ],
+      "提交",
+      [
+        344,
+        456
+      ],
+      true
+    ],
+    [
+      "context",
+      "task",
+      [
+        [
+          420,
+          650
+        ],
+        [
+          375,
+          650
+        ],
+        [
+          375,
+          650
+        ],
+        [
+          335,
+          650
+        ]
+      ],
+      "",
+      null,
+      true
+    ],
+    [
+      "context",
+      "content",
+      [
+        [
+          420,
+          700
+        ],
+        [
+          360,
+          700
+        ],
+        [
+          360,
+          830
+        ],
+        [
+          335,
+          830
+        ]
+      ],
+      "",
+      null,
+      true
+    ],
+    [
+      "session",
+      "store",
+      [
+        [
+          80,
+          550
+        ],
+        [
+          20,
+          550
+        ],
+        [
+          20,
+          1120
+        ],
+        [
+          35,
+          1120
+        ]
+      ],
+      "",
+      null,
+      true
+    ],
+    [
+      "task",
+      "store",
+      [
+        [
+          80,
+          710
+        ],
+        [
+          10,
+          710
+        ],
+        [
+          10,
+          1170
+        ],
+        [
+          35,
+          1170
+        ]
+      ],
+      "",
+      null,
+      true
+    ],
+    [
+      "content",
+      "store",
+      [
+        [
+          185,
+          915
+        ],
+        [
+          185,
+          1070
+        ]
+      ],
+      "版本内容 / 索引",
+      [
+        196,
+        999
+      ],
+      false
+    ],
+    [
+      "extensions",
+      "runtime",
+      [
+        [
+          1205,
+          495
+        ],
+        [
+          1180,
+          495
+        ],
+        [
+          1180,
+          450
+        ],
+        [
+          1130,
+          450
+        ]
+      ],
+      "",
+      null,
+      true
+    ],
+    [
+      "extensions",
+      "skills",
+      [
+        [
+          1355,
+          575
+        ],
+        [
+          1355,
+          635
+        ]
+      ],
+      "提供目录与扩展点",
+      [
+        1370,
+        610
+      ],
+      true
+    ],
+    [
+      "credentials",
+      "execution",
+      [
+        [
+          1355,
+          945
+        ],
+        [
+          1355,
+          1020
+        ],
+        [
+          1100,
+          1020
+        ],
+        [
+          1100,
+          1100
+        ]
+      ],
+      "凭证引用",
+      [
+        1210,
+        1005
+      ],
+      true
+    ]
+  ]
+}

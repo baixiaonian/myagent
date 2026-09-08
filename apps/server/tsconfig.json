@@ -1,0 +1,36 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": ".cache/build.tsbuildinfo",
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "references": [
+    {
+      "path": "../../packages/application"
+    },
+    {
+      "path": "../../packages/kernel"
+    },
+    {
+      "path": "../../packages/state"
+    },
+    {
+      "path": "../../packages/content"
+    },
+    {
+      "path": "../../packages/adapters"
+    },
+    {
+      "path": "../../packages/extensions"
+    },
+    {
+      "path": "../../packages/orchestration"
+    },
+    {
+      "path": "../../packages/observability"
+    }
+  ]
+}

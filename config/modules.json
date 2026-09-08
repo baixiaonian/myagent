@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "modules": [
+    {
+      "name": "@myagent/contracts",
+      "path": "packages/contracts",
+      "responsibility": "跨模块数据与协议，不承载业务策略",
+      "status": "scaffold",
+      "allowedDependencies": []
+    },
+    {
+      "name": "@myagent/sdk",
+      "path": "packages/sdk",
+      "responsibility": "Web / CLI 客户端协议封装",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/contracts"]
+    },
+    {
+      "name": "@myagent/kernel",
+      "path": "packages/kernel",
+      "responsibility": "唯一 Agent 循环及模型、上下文、工具、权限接口",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/contracts"]
+    },
+    {
+      "name": "@myagent/state",
+      "path": "packages/state",
+      "responsibility": "会话、任务、运行与调用记录的状态所有权",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/contracts"]
+    },
+    {
+      "name": "@myagent/content",
+      "path": "packages/content",
+      "responsibility": "记忆、来源材料、检索与版本化产物",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/contracts"]
+    },
+    {
+      "name": "@myagent/application",
+      "path": "packages/application",
+      "responsibility": "用户用例、命令幂等与事务协调",
+      "status": "scaffold",
+      "allowedDependencies": [
+        "@myagent/contracts",
+        "@myagent/kernel",
+        "@myagent/state",
+        "@myagent/content"
+      ]
+    },
+    {
+      "name": "@myagent/extensions",
+      "path": "packages/extensions",
+      "responsibility": "插件清单、作用域注册、Skill 与 Hook 生命周期",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/contracts", "@myagent/kernel"]
+    },
+    {
+      "name": "@myagent/orchestration",
+      "path": "packages/orchestration",
+      "responsibility": "Workflow、调度、后台工作及子任务协调",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/contracts"]
+    },
+    {
+      "name": "@myagent/observability",
+      "path": "packages/observability",
+      "responsibility": "观测契约、关联字段与脱敏约定",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/contracts"]
+    },
+    {
+      "name": "@myagent/adapters",
+      "path": "packages/adapters",
+      "responsibility": "模型、执行、连接器、存储与身份的具体适配层",
+      "status": "scaffold",
+      "allowedDependencies": [
+        "@myagent/contracts",
+        "@myagent/kernel",
+        "@myagent/state",
+        "@myagent/content",
+        "@myagent/observability"
+      ]
+    },
+    {
+      "name": "@myagent/testing",
+      "path": "packages/testing",
+      "responsibility": "未来的 FakeModel / FakeTool / FakeClock",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/contracts", "@myagent/kernel"]
+    },
+    {
+      "name": "@myagent/web",
+      "path": "apps/web",
+      "responsibility": "Web 工作台入口；当前仅静态工程占位页",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/sdk"]
+    },
+    {
+      "name": "@myagent/server",
+      "path": "apps/server",
+      "responsibility": "后端唯一装配入口；当前仅启动提示",
+      "status": "scaffold",
+      "allowedDependencies": [
+        "@myagent/application",
+        "@myagent/kernel",
+        "@myagent/state",
+        "@myagent/content",
+        "@myagent/adapters",
+        "@myagent/extensions",
+        "@myagent/orchestration",
+        "@myagent/observability"
+      ]
+    },
+    {
+      "name": "@myagent/cli",
+      "path": "apps/cli",
+      "responsibility": "通过 SDK 访问应用；当前仅启动提示",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/sdk"]
+    },
+    {
+      "name": "@myagent/worker",
+      "path": "apps/worker",
+      "responsibility": "隔离执行入口；当前仅启动提示",
+      "status": "scaffold",
+      "allowedDependencies": ["@myagent/contracts", "@myagent/adapters"]
+    }
+  ]
+}

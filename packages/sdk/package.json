@@ -1,0 +1,20 @@
+{
+  "name": "@myagent/sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Web / CLI 客户端协议封装",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@myagent/contracts": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}

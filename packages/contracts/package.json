@@ -1,0 +1,18 @@
+{
+  "name": "@myagent/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "跨模块数据与协议，不承载业务策略",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {},
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}

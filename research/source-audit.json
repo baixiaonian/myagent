@@ -1,0 +1,19 @@
+{
+  "verified_at": "2026-09-07T08:49:15.612702+00:00",
+  "method": "Git remote HEAD comparison, static source reading, commit-pinned file and line references",
+  "snapshots": {
+    "pi": {
+      "repo": "earendil-works/pi",
+      "sha": "e687434a60174db1a9c961d973881a7a851a0597"
+    },
+    "codex": {
+      "repo": "openai/codex",
+      "sha": "5ecb3afd1bf405149e2159bfda50093b0c1b5fab"
+    },
+    "deepseek-harness": {
+      "repo": "deepseek-ai/deepseek-harness",
+      "sha": "d347e703908d0406b7a7ef80e3a0e594d86b2215"
+    }
+  },
+  "note": "Pi advanced since prior workspace snapshot; fetched current HEAD. Referenced Pi files unchanged across this update. No upstream runtime tests executed."
+}

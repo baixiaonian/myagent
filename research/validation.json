@@ -1,0 +1,38 @@
+{
+  "artifact": "agent-architecture.html",
+  "version": "1.1",
+  "date": "2026-09-07",
+  "checks": {
+    "html_local_anchors": "pass",
+    "duplicate_ids": "none",
+    "external_runtime_assets": "none",
+    "javascript_syntax": "pass",
+    "svg_xml": "pass",
+    "drawio_validation": "43 cells, zero warnings",
+    "source_anchor_ranges": 20,
+    "diagram": {
+      "components": 19,
+      "edges": 22,
+      "png": "Quick Look rendering from matching SVG; visually inspected"
+    },
+    "desktop": {
+      "viewport": 1280,
+      "document_width": 1280,
+      "console_errors": 0
+    },
+    "mobile": {
+      "viewport": 390,
+      "document_width": 390,
+      "tree_client_width": 354,
+      "tree_scroll_width": 559
+    },
+    "interactions": {
+      "step_selection": "pass",
+      "expand_12_modules": "pass",
+      "diagram_zoom_reset": "pass",
+      "drawio_svg_download": "Payloads embedded and syntax checked; Draw.io button clicked, in-app browser did not emit download event. Standalone .drawio and .svg files also provided."
+    },
+    "upstream_runtime_tests": "not run; architecture research only",
+    "print_layout": "print styles supplied, not print-rendered"
+  }
+}

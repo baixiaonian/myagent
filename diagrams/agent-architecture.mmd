@@ -1,0 +1,23 @@
+flowchart TB
+  UI["产品入口"] --> APP["应用服务"]
+  ORCH["任务编排"] --> APP
+  APP --> RT["Agent 运行内核"]
+  EXT["扩展管理"] -.-> RT
+  subgraph think[上下文与模型]
+    CTX["上下文构建"] --> MODEL["模型网关"]
+  end
+  subgraph action[工具与执行]
+    TOOL["工具系统"] --> POLICY["权限与人工交互"]
+    POLICY --> EXEC["执行网关"]
+    EXEC --> LOCAL["隔离 Worker"]
+    EXEC --> MCP["外部连接器"]
+  end
+  subgraph data[状态与内容]
+    STATE["状态服务"] --> STORE["持久化适配器"]
+    DATA["内容服务"] --> STORE
+  end
+  RT --> CTX
+  RT --> TOOL
+  RT -.-> STATE
+  CTX -.-> STATE
+  CTX -.-> DATA
