@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "唯一 Agent 循环及模型、上下文、工具、权限接口",
+  "description": "零工具 Chat Runtime、上下文裁剪与 ModelPort",
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b"

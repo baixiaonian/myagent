@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "会话、任务、运行与调用记录的状态所有权",
+  "description": "聊天仓储、凭证契约及状态语义",
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b"

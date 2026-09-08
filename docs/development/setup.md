@@ -1,27 +1,54 @@
-# 开发环境与命令
+# 安装、使用与维护
 
-推荐 Node.js 24 LTS（.nvmrc / .node-version），pnpm 11.7.0。首次安装依赖：
+## 环境与启动
 
-```sh
-pnpm install --frozen-lockfile
-pnpm dev
-```
+推荐 Node.js 24 LTS，pnpm 11.7.0。安装 `pnpm install --frozen-lockfile`；安装脚本仅允许 esbuild 和 better-sqlite3。若 SQLite 原生模块找不到适配当前 Node ABI 的预编译包，安装 Python 3 和本机 C++ 工具（macOS Command Line Tools；Linux make/g++）。切换 Node 主版本后重新安装或 `pnpm rebuild better-sqlite3`。
 
-Web 默认由 Vite 提供 loopback 开发地址；以终端输出为准。服务端三个入口仅打印骨架状态，没有监听 HTTP、执行任务或加载凭证。
+- `pnpm dev`：先构建内部包，然后同时启动 TypeScript 编译监听、Node 后端监听和 Vite，页面 <http://127.0.0.1:5173>，后端 3000。Ctrl+C 停止整组进程。后端模块重新编译会重启服务，正在生成的 Run 会中断，开发时属于预期行为。
+- `pnpm build && pnpm start`：生产 Web 和 API 统一在 <http://127.0.0.1:3000>。
+- `pnpm verify`：工程、类型、单元 / 集成测试和生产构建。
+- `pnpm test:e2e`：先构建，再启动临时数据目录的测试服务与本地假模型，运行 Chromium。首次需要 `pnpm exec playwright install chromium`。
 
-| 命令 | 行为 |
-| --- | --- |
-| pnpm dev | Web 静态骨架页 |
-| pnpm dev:server / dev:cli / dev:worker | tsx watch 对应占位入口 |
-| pnpm typecheck | 检查并增量编译工作区，再检查工程工具与测试类型；产生被忽略的缓存与 dist |
-| pnpm dev:types | 持续编译工作区；后续修改被其他包依赖的源码时另开终端运行 |
-| pnpm build | 编译工作区并打包 Web |
-| pnpm lint / format | Biome 检查 / 格式整理新工程文件 |
-| pnpm check:architecture | 包依赖、源码导入与循环检查 |
-| pnpm check:docs | 必需文档、局部规则和相对链接检查 |
-| pnpm test | 工程检查器回归测试 |
-| pnpm verify | 完整工程检查与构建 |
+`MYAGENT_DATA_DIR` 覆盖默认 `~/.myagent/`；`PORT` 指定后端端口（开发代理自动同步），`MYAGENT_WEB_PORT` 指定 Vite 端口。例如 `PORT=3001 MYAGENT_WEB_PORT=5174 pnpm dev`。`.env.example` 仅示例，不自动读取。开发时使用 `MYAGENT_DATA_DIR=/absolute/path pnpm dev`。不要把 API 密钥写入 `.env`、启动参数或源码。
 
-安装脚本 allowBuilds 当前仅允许构建工具 esbuild。新增需要安装脚本的依赖时审查后更新 pnpm-workspace.yaml。当前无 API key、数据库或 Docker 前置条件。
+## 首次配置
 
-所有包 private，未配置发布或远程仓库。未来运行数据放在仓库外；不要把研究快照或真实业务数据加入 workspace。
+在设置中填写完整基础地址，如服务商提供的 `https://example.com/v1`，不追加 `/chat/completions`。模型 ID 手动填写，大小写按服务商要求。填写密钥和可选系统提示词；点击测试连接验证一次真实简短请求（可能产生费用，不进入历史），再保存。系统提示词最多 4000 字符。
+
+读取设置只显示掩码。留空密钥保存其他设置会保留原密钥；输入新值会替换；垃圾桶按钮清除已保存密钥。正在生成的请求使用启动时快照，新设置从下一次生成生效。
+
+## 使用行为
+
+Enter 发送，Shift+Enter 换行，中文输入法确认候选时不会发送。生成中可继续写草稿；草稿只保存在当前页面内存，刷新会丢失未发送草稿。刷新、关闭页面不会取消后端回答。向上阅读暂停自动滚动，可点向下箭头回到底部。
+
+首次问题取前 32 字符作为标题；可随时重命名。重新生成复用最后一个问题，成功后替换原答案；失败保留原完整答案并展示错误。原始版本及失败候选仍保存在数据库便于追溯，界面只呈现当前答案；删除会话会级联删除所有版本及事件。
+
+输入最多 8000 字符；上下文取最近最多 20 轮完整成功问答，连同系统提示词、当前问题最多 32000 字符。裁剪以完整问答为单位，不删除历史，也不自动摘要。字符数并非精确 token 数；服务商仍可能因 token 窗口更小拒绝请求。单次请求默认 120 秒，输出防护上限 200000 字符。限流、鉴权失败、超时均需手动重试，不隐式重发付费请求。
+
+## Docker
+
+`docker compose up -d --build` 构建并启动，打开本机 3000。`docker compose logs -f` 查看脱敏服务日志，`docker compose down` 停止但保留卷。命名卷会带 Compose 项目前缀；可用 `docker volume ls` 查看。容器内数据库目录 `/data`，容器使用普通 node 用户。Docker 中 `127.0.0.1` 指容器自身，连接宿主机模型通常使用 `host.docker.internal`（Linux 需自行配置宿主机网关）。
+
+Compose 只映射 `127.0.0.1:3000:3000`。`MYAGENT_CONTAINER=1` 仅供容器内部绑定使用，不能作为公网部署开关；应用仍限制本机 Host 和 Origin。没有身份认证，不能通过反向代理开放给公网用户。
+
+## 升级、备份和恢复
+
+1. 停止本机服务或 `docker compose stop`，确认没有进程写入。
+2. **完整复制数据目录 / 命名卷**到受限备份位置；包括 `state.db`、可能存在的 `state.db-wal`、`state.db-shm` 和 `credentials.json`。不要只复制正在运行的主数据库。备份含明文密钥，应与数据目录同等保护。
+3. 更新源码，运行锁定依赖安装、`pnpm verify`、`pnpm build`；Docker 使用 `docker compose build`。
+4. 启动新版本，检查健康接口与历史会话。迁移根据 SQLite `user_version` 在事务中自动执行；v1 对应 [初始迁移](../../migrations/0001_chat.sql)。新版数据库拒绝被旧版应用打开，降级需同时恢复匹配版本的完整备份。
+
+恢复时先停止服务，替换整个目录 / 卷内容，恢复目录 0700、凭证和数据库 0600 权限，再启动。不要同时对同一目录运行两个服务。进程锁为数据目录内的 `server.lock`（锁目录），不会写入数据卷父目录。启动兼容检查旧版本的数据目录旁锁，升级需先停止旧实例。目录锁可在异常退出后约 10 秒失效；不要在活进程仍运行时手动删除锁。数据库升级或恢复前始终保留原备份。
+
+## 删除与排障
+
+- 删除会话：侧栏删除按钮确认，活动回答先取消；删除后不会被迟到结果恢复。
+- 删除密钥：设置中的清除按钮；已开始的请求仍使用快照，必要时先停止生成。
+- 删除全部数据：停止服务，再删除自己确认的数据目录；Docker 使用 `docker compose down -v` 会永久删除本项目卷。此操作不可撤销，必要时先备份。
+- 接口 / 模型不存在：核对基础地址和模型 ID，尤其是否重复拼接 `/chat/completions`。
+- 密钥无效：检查该密钥的模型访问权限；限流也可能是额度不足。
+- 连接或超时：检查服务商网络、代理、接口是否支持 Chat Completions 流；本实现不承诺所有兼容服务行为一致。
+- 无法启动：检查端口占用、目录权限、SQLite 原生驱动和已有实例；不能读写磁盘时先修复磁盘问题，勿反复重试生成。
+- 服务意外退出：重启后未完成 Run 标记 interrupted，保留最近已提交的部分（最多约 250ms 增量未落盘），不自动调用模型。
+
+Docker 构建的 APT 下载显式使用 IPv4、30 秒超时和 3 次重试，避免下载无进展时无限等待；不修改宿主机网络设置。

@@ -1,22 +1,20 @@
-# 技术选型与落地状态
+# 技术选型与落地
 
-## 已安装的工程依赖
+直接依赖固定版本，以 package.json / pnpm-lock.yaml 为准。
 
-- Node.js 24 LTS 为推荐 / CI 环境；pnpm 11.7.0 固定在 packageManager。
-- TypeScript 6.0.3、ESM、strict、NodeNext、项目引用。暂选成熟 6.x 编译器 API 供工程导入检查使用；升级主版本需验证检查器。
-- React 19.2.8 + Vite 8.2.2：只承载 Web 工程占位页。
-- Biome 2.5.12：新工程的格式与静态检查。
-- Vitest 5.0.0：工程检查器回归验证。tsx 4.23.13：Node 入口的开发监听。
-- 直接依赖固定精确版本，完整解析以 pnpm-lock.yaml 为准。
+| 技术 | 当前用途 |
+| --- | --- |
+| Node.js 24 LTS / pnpm 11.7.0 | 推荐运行环境与 workspace |
+| TypeScript 6.0.3 / ESM strict | 模块边界与项目引用 |
+| React 19.2.8 / Vite 8.2.2 | Web 聊天、设置、开发代理与构建 |
+| Fastify 5.12.3 / @fastify/static 10.1.3 | 本机 API、JSON Schema 校验、生产 Web 托管 |
+| better-sqlite3 13.0.3 / Drizzle 0.45.2 | SQLite WAL、同步事务与类型化查询 |
+| OpenAI TypeScript SDK 7.10.0 | 自定义基础地址的 Chat Completions 流式适配器；关闭重试 |
+| proper-lockfile 4.1.2 | 单数据目录进程互斥 |
+| react-markdown / remark-gfm / rehype-highlight | 安全 Markdown、表格与代码高亮；不执行 HTML |
+| Lucide React | 一致的功能图标 |
+| Biome 2.5.12 / Vitest 5.0.0 / Playwright 1.63.0 | 静态检查、内核与 HTTP 集成、浏览器验收 |
 
-## 目标选型，尚未接入
+FTS5、MCP、容器执行沙箱、OpenTelemetry、PostgreSQL / pgvector 尚未接入。Docker 仅用于部署本地产品，不是工具执行沙箱。
 
-Fastify、JSON Schema / Ajv、SQLite WAL + better-sqlite3 + Drizzle、FTS5、模型官方 SDK、MCP TypeScript SDK、Playwright、受限容器、Pino / OpenTelemetry，以及规模需要时的 PostgreSQL / pgvector。
-
-在对应功能进入迭代时才安装和验证。保留 HTML 中的理由与替换条件，不一次性引入所有包。
-
-## 官方资料
-
-[pnpm workspace](https://pnpm.io/workspaces) 定义工作区和 workspace 协议；[TypeScript 配置](https://www.typescriptlang.org/tsconfig/) 用于工程编译；[Vite 指南](https://vite.dev/guide/) 用于 Web 开发与构建。
-
-版本根据初始化时 npm 官方包元数据选择，并由锁文件固定。官方文档的默认版本可能继续变化，升级时以安装版本为准。
+依据：[OpenAI Chat Completions SDK](https://developers.openai.com/api/reference/typescript/resources/chat/subresources/completions/methods/create)、[Fastify](https://fastify.dev/docs/latest/)、[Drizzle SQLite](https://orm.drizzle.team/docs/get-started-sqlite)、[React Markdown 安全边界](https://github.com/remarkjs/react-markdown#security)。本轮取舍见 [ADR-0003](../adr/0003-local-web-chat.md)。

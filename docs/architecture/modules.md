@@ -1,51 +1,39 @@
 # 模块关系与目录
 
-以下工作区已创建，业务模块尚未实现。机器可读允许依赖见 [config/modules.json](../../config/modules.json)。包间通过公开入口导入，不使用跨包相对路径或 `@myagent/foo/src/...`。
+保留 15 个 workspace，8 个模块实现聊天 v1 路径，其余继续作为完整 Agent 的骨架。允许依赖是架构上限，运行时实际调用见源码。机器可读清单：[config/modules.json](../../config/modules.json)。
 
-| 目录 | 职责 | 允许的内部依赖 | 状态 |
+| 目录 | 职责 | 允许内部依赖 | 状态 |
 | --- | --- | --- | --- |
-| `packages/contracts` | 跨模块数据与协议，不承载业务策略 | 无 | 骨架 |
-| `packages/sdk` | Web / CLI 客户端协议封装 | `@myagent/contracts` | 骨架 |
-| `packages/kernel` | 唯一 Agent 循环及模型、上下文、工具、权限接口 | `@myagent/contracts` | 骨架 |
-| `packages/state` | 会话、任务、运行与调用记录的状态所有权 | `@myagent/contracts` | 骨架 |
+| `packages/contracts` | 聊天 Session / Message / Run / Settings 与事件 DTO | 无 | 聊天 v1 |
+| `packages/sdk` | Web 的 HTTP 命令、SSE 订阅与去重投影 | `@myagent/contracts` | 聊天 v1 |
+| `packages/kernel` | 零工具 Chat Runtime、上下文裁剪与 ModelPort | `@myagent/contracts` | 聊天 v1 |
+| `packages/state` | 聊天仓储、凭证契约及状态语义 | `@myagent/contracts` | 聊天 v1 |
 | `packages/content` | 记忆、来源材料、检索与版本化产物 | `@myagent/contracts` | 骨架 |
-| `packages/application` | 用户用例、命令幂等与事务协调 | `@myagent/contracts`, `@myagent/kernel`, `@myagent/state`, `@myagent/content` | 骨架 |
+| `packages/application` | 聊天用例、设置快照、幂等提交与运行生命周期 | `@myagent/contracts`, `@myagent/kernel`, `@myagent/state`, `@myagent/content` | 聊天 v1 |
 | `packages/extensions` | 插件清单、作用域注册、Skill 与 Hook 生命周期 | `@myagent/contracts`, `@myagent/kernel` | 骨架 |
 | `packages/orchestration` | Workflow、调度、后台工作及子任务协调 | `@myagent/contracts` | 骨架 |
 | `packages/observability` | 观测契约、关联字段与脱敏约定 | `@myagent/contracts` | 骨架 |
-| `packages/adapters` | 模型、执行、连接器、存储与身份的具体适配层 | `@myagent/contracts`, `@myagent/kernel`, `@myagent/state`, `@myagent/content`, `@myagent/observability` | 骨架 |
+| `packages/adapters` | OpenAI 流式模型、SQLite / Drizzle 与文件凭证 | `@myagent/contracts`, `@myagent/kernel`, `@myagent/state`, `@myagent/content`, `@myagent/observability` | 聊天 v1 |
 | `packages/testing` | 未来的 FakeModel / FakeTool / FakeClock | `@myagent/contracts`, `@myagent/kernel` | 骨架 |
-| `apps/web` | Web 工作台入口；当前仅静态工程占位页 | `@myagent/sdk` | 骨架 |
-| `apps/server` | 后端唯一装配入口；当前仅启动提示 | `@myagent/application`, `@myagent/kernel`, `@myagent/state`, `@myagent/content`, `@myagent/adapters`, `@myagent/extensions`, `@myagent/orchestration`, `@myagent/observability` | 骨架 |
+| `apps/web` | 本地聊天工作台、模型设置与响应式界面 | `@myagent/sdk` | 聊天 v1 |
+| `apps/server` | 本地 API / SSE、校验、装配、恢复与静态托管 | `@myagent/application`, `@myagent/kernel`, `@myagent/state`, `@myagent/content`, `@myagent/adapters`, `@myagent/extensions`, `@myagent/orchestration`, `@myagent/observability`, `@myagent/contracts` | 聊天 v1 |
 | `apps/cli` | 通过 SDK 访问应用；当前仅启动提示 | `@myagent/sdk` | 骨架 |
 | `apps/worker` | 隔离执行入口；当前仅启动提示 | `@myagent/contracts`, `@myagent/adapters` | 骨架 |
 
-## 工程内的组织方式
+## 定位实现
 
-- kernel 下 runtime / context / model / tools / policy / interaction / execution / ports 是一个包内的职责目录。
-- application 负责用户用例及事务，state 负责状态语义，adapters/storage 负责具体数据库驱动。
-- adapters 集中保留模型、执行、连接器、存储、身份、凭证与观测的替换点。
-- extensions 定义注册生命周期，plugins 保存将来真正启用的能力包。当前 plugins、skills、workflows 不参与包自动发现。
-- orchestration 的 RunCommandPort 最终放在 contracts/commands 中作为中立契约，由 application 实现、server 注入；当前尚未定义该接口。
-- testing 只放测试替身，不允许被产品运行代码依赖。
-- 包的 public exports 当前只导出空模块；依赖预先连接工作区，不代表业务已经互相调用。
+- Web：`src/App.tsx` 负责会话工作台和交互；`features/chat` 渲染安全 Markdown，`features/settings` 维护设置表单，`components/Modal.tsx` 使用原生对话框。
+- SDK：`src/index.ts` 封装所有 HTTP 命令、SSE 自动重连与事件投影；不复制服务端状态机。
+- Application：`chat.ts` 管理活动执行、250ms 增量提交和取消；`settings.ts` 维护设置快照、凭证引用和实际连接测试。
+- Kernel：`context` 选择最近完整问答，`runtime` 执行一次模型请求及超时 / 取消，`model` 只定义通用接口。
+- State：定义 ChatStore / CredentialStore 契约；Adapters 的 `storage/sqlite` 实现事务，`models/openai` 实现网络，`credentials` 实现原子文件写入。
+- Server：`bootstrap` 装配与 HTTP/SSE 路由，`routes/schemas.ts` 集中 JSON 校验，`main.ts` 只处理进程配置与关闭。
+- `migrations/0001_chat.sql` 是数据库 v1 真正迁移；`tests/chat` 包含协议假服务与单元 / 集成测试，`tests/e2e` 是浏览器产品流程。
 
-## 依赖规则的检查范围
+## 依赖和扩展
 
-`pnpm check:architecture` 验证清单与 package.json、内部依赖与导入方向、跨包相对路径、深路径导入、包间循环。contracts / kernel 不允许外部运行时依赖或 Node 内置模块导入。
+`pnpm check:architecture` 检查清单、package.json、跨包相对路径、深路径和循环。contracts / kernel 禁止外部运行时库或 Node API。生产只从包公共入口导入；根 tests 是集成测试组合点，可读各模块源入口。
 
-运行时代码动态产生的导入路径、插件行为、执行端安全隔离仍需未来的契约与集成测试，静态检查不能证明这些能力。
+本次 server 新增对 contracts 的显式边，用于路由 DTO 和安全错误类型。其他允许依赖保留架构设计中的未来方向；其中 content/extensions/orchestration/observability/testing、CLI、Worker 没有实现新业务。kernel 的 tools/policy/execution 等目录同样是预留，不能视为可用工具系统。
 
-## 其他目录
-
-| 目录 | 用途 |
-| --- | --- |
-| docs/ | 当前知识、协议、ADR 与迭代记录 |
-| config/ | 模块检查清单和运行时配置预留 |
-| plugins/、skills/、workflows/ | 扩展和声明式能力预留 |
-| tests/、evals/ | 工程 / 功能验证与真实任务评测 |
-| migrations/ | 数据与事件格式迁移预留 |
-| scripts/ | 工程检查与既有报告生成工具 |
-| research/、diagrams/ | 上游证据清单、研究快照和设计交付物 |
-
-完整目标目录原型见 [HTML 报告](../../agent-architecture.html)。当前使用 main.ts / main.tsx 作为入口文件，保留其他职责子目录；这一工程化细化见 [ADR-0002](../adr/0002-workspace-and-tooling.md)。
+docs 保存有效知识，AGENTS 约束开发，history 追加事实。plugins/skills/workflows/evals 仍预留。research/upstream 只读且排除构建；原始 HTML 和 diagrams 是历史设计产物。

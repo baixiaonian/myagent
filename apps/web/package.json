@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Web 工作台入口；当前仅静态工程占位页",
+  "description": "本地聊天工作台、模型设置与响应式界面",
   "scripts": {
     "build": "vite build",
     "typecheck": "tsc -b",
@@ -12,12 +12,17 @@
   },
   "dependencies": {
     "@myagent/sdk": "workspace:*",
+    "highlight.js": "11.12.0",
+    "lucide-react": "1.41.0",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "react-markdown": "10.1.0",
+    "rehype-highlight": "7.0.2",
+    "remark-gfm": "4.0.1"
   },
   "devDependencies": {
-    "vite": "8.2.2",
     "@types/react": "19.2.18",
-    "@types/react-dom": "19.2.7"
+    "@types/react-dom": "19.2.7",
+    "vite": "8.2.2"
   }
 }

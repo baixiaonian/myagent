@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "跨模块数据与协议，不承载业务策略",
+  "description": "聊天 Session / Message / Run / Settings 与事件 DTO",
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b"

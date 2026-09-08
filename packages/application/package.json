@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "用户用例、命令幂等与事务协调",
+  "description": "聊天用例、设置快照、幂等提交与运行生命周期",
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b"

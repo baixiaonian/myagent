@@ -14,3 +14,9 @@ __pycache__/
 /research/report-inline.js
 
 .cache/
+playwright-report/
+test-results/
+*.db
+*.db-wal
+*.db-shm
+credentials.json

@@ -1,0 +1,16 @@
+services:
+  myagent:
+    build: .
+    init: true
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - myagent-data:/data
+    restart: unless-stopped
+    stop_grace_period: 15s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  myagent-data:

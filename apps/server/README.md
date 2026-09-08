@@ -1,10 +1,7 @@
-# server
+# @myagent/server
 
-后端唯一装配入口；当前仅启动提示。
+本地 API / SSE、校验、装配、恢复与静态托管。已实现本地 Web Chat v1 对应路径，其余完整 Agent 设计仍为骨架。
 
-状态：工程骨架。当前没有对应的 Agent 业务实现。
+公共入口：`src/main.ts`；`src/bootstrap/index.ts` 负责装配。
 
-- 入口：`src/main.ts`。
-- 允许的内部依赖：`@myagent/application`, `@myagent/kernel`, `@myagent/state`, `@myagent/content`, `@myagent/adapters`, `@myagent/extensions`, `@myagent/orchestration`, `@myagent/observability`。
-- 开发前阅读 [模块关系](../../docs/architecture/modules.md) 和 [当前状态](../../docs/STATUS.md)。
-- 新增功能时同时更新上述文档、相关局部 AGENTS.md（规则有变化时）和 [迭代历史](../../docs/history/README.md)。
+遵循 [根开发约定](../../AGENTS.md)、[当前状态](../../docs/STATUS.md) 和 [聊天协议](../../docs/protocols/chat-v1.md)。职责和依赖详见 [模块关系](../../docs/architecture/modules.md)。

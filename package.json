@@ -1,6 +1,6 @@
 {
   "name": "myagent",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.7.0",
@@ -9,7 +9,7 @@
     "pnpm": "11.7.0"
   },
   "scripts": {
-    "dev": "pnpm --filter @myagent/web dev",
+    "dev": "node scripts/dev.mjs",
     "dev:server": "pnpm --filter @myagent/server dev",
     "dev:worker": "pnpm --filter @myagent/worker dev",
     "dev:cli": "pnpm --filter @myagent/cli dev",
@@ -19,16 +19,22 @@
     "format": "biome check --write .",
     "check:architecture": "node scripts/check-architecture.mjs",
     "check:docs": "node scripts/check-docs.mjs",
-    "test": "vitest run",
+    "test": "tsc -b && vitest run",
     "check": "pnpm lint && pnpm check:architecture && pnpm check:docs && pnpm typecheck && pnpm test",
-    "verify": "pnpm check && pnpm build",
-    "dev:types": "tsc -b --watch --preserveWatchOutput"
+    "verify": "pnpm check && pnpm build && pnpm check:release",
+    "dev:types": "tsc -b --watch --preserveWatchOutput",
+    "start": "node apps/server/dist/main.js",
+    "test:e2e": "pnpm build && playwright test",
+    "check:release": "node scripts/check-client-build.mjs",
+    "test:live": "node scripts/test-live.mjs",
+    "test:docker": "docker build -t myagent:acceptance-v1 . && node scripts/test-docker.mjs"
   },
   "devDependencies": {
-    "typescript": "6.0.3",
-    "@types/node": "24.13.3",
     "@biomejs/biome": "2.5.12",
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.13.3",
     "tsx": "4.23.13",
+    "typescript": "6.0.3",
     "vitest": "5.0.0"
   }
 }

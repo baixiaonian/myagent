@@ -4,29 +4,29 @@
     {
       "name": "@myagent/contracts",
       "path": "packages/contracts",
-      "responsibility": "跨模块数据与协议，不承载业务策略",
-      "status": "scaffold",
+      "responsibility": "聊天 Session / Message / Run / Settings 与事件 DTO",
+      "status": "chat-v1",
       "allowedDependencies": []
     },
     {
       "name": "@myagent/sdk",
       "path": "packages/sdk",
-      "responsibility": "Web / CLI 客户端协议封装",
-      "status": "scaffold",
+      "responsibility": "Web 的 HTTP 命令、SSE 订阅与去重投影",
+      "status": "chat-v1",
       "allowedDependencies": ["@myagent/contracts"]
     },
     {
       "name": "@myagent/kernel",
       "path": "packages/kernel",
-      "responsibility": "唯一 Agent 循环及模型、上下文、工具、权限接口",
-      "status": "scaffold",
+      "responsibility": "零工具 Chat Runtime、上下文裁剪与 ModelPort",
+      "status": "chat-v1",
       "allowedDependencies": ["@myagent/contracts"]
     },
     {
       "name": "@myagent/state",
       "path": "packages/state",
-      "responsibility": "会话、任务、运行与调用记录的状态所有权",
-      "status": "scaffold",
+      "responsibility": "聊天仓储、凭证契约及状态语义",
+      "status": "chat-v1",
       "allowedDependencies": ["@myagent/contracts"]
     },
     {
@@ -39,8 +39,8 @@
     {
       "name": "@myagent/application",
       "path": "packages/application",
-      "responsibility": "用户用例、命令幂等与事务协调",
-      "status": "scaffold",
+      "responsibility": "聊天用例、设置快照、幂等提交与运行生命周期",
+      "status": "chat-v1",
       "allowedDependencies": [
         "@myagent/contracts",
         "@myagent/kernel",
@@ -72,8 +72,8 @@
     {
       "name": "@myagent/adapters",
       "path": "packages/adapters",
-      "responsibility": "模型、执行、连接器、存储与身份的具体适配层",
-      "status": "scaffold",
+      "responsibility": "OpenAI 流式模型、SQLite / Drizzle 与文件凭证",
+      "status": "chat-v1",
       "allowedDependencies": [
         "@myagent/contracts",
         "@myagent/kernel",
@@ -92,15 +92,15 @@
     {
       "name": "@myagent/web",
       "path": "apps/web",
-      "responsibility": "Web 工作台入口；当前仅静态工程占位页",
-      "status": "scaffold",
+      "responsibility": "本地聊天工作台、模型设置与响应式界面",
+      "status": "chat-v1",
       "allowedDependencies": ["@myagent/sdk"]
     },
     {
       "name": "@myagent/server",
       "path": "apps/server",
-      "responsibility": "后端唯一装配入口；当前仅启动提示",
-      "status": "scaffold",
+      "responsibility": "本地 API / SSE、校验、装配、恢复与静态托管",
+      "status": "chat-v1",
       "allowedDependencies": [
         "@myagent/application",
         "@myagent/kernel",
@@ -109,7 +109,8 @@
         "@myagent/adapters",
         "@myagent/extensions",
         "@myagent/orchestration",
-        "@myagent/observability"
+        "@myagent/observability",
+        "@myagent/contracts"
       ]
     },
     {

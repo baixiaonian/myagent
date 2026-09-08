@@ -1,53 +1,39 @@
-# 架构概览
+# 当前架构
 
-架构基线：模块化单体 + 稳定运行内核 + 可替换适配器。当前仅建立工程边界。
-
-## 主链路
+MyAgent 采用模块化单体。本地服务器统一托管 Web 和 API，SQLite 与凭证文件在用户数据目录，模型服务由用户配置。浏览器不持有已保存密钥。
 
 ```mermaid
 flowchart LR
-  Client[Web / CLI] --> SDK
-  SDK --> App[Application]
-  App --> Runtime
-  Runtime --> Context[Context Builder]
-  Runtime --> Model[Model Gateway]
-  Runtime --> Tool[Tool System]
-  Tool --> Policy
-  Policy --> Execution[Execution Gateway]
-  Execution --> Worker[Worker / Connector]
-  Worker --> Tool
-  Tool --> Runtime
+  W[Web React 工作台] --> S[SDK HTTP 命令 / SSE 去重]
+  S --> H[Fastify API / JSON 校验 / 本机访问边界]
+  H --> A[Application 会话用例 / 幂等 / 并发]
+  A --> K[Chat Runtime 单次模型调用 / 取消 / 超时]
+  A --> C[Context Builder 最近完整问答 / 字符预算]
+  C --> K
+  K --> P[ModelPort]
+  P --> O[OpenAI SDK 适配器]
+  O --> M[用户配置的模型服务]
+  A --> ST[State 仓储契约]
+  ST --> DB[Drizzle / better-sqlite3 / SQLite WAL]
+  H --> SET[SettingsService]
+  SET --> V[独立凭证文件 0600]
+  SET --> ST
+  DB --> E[持久化有序事件]
+  E --> S
 ```
 
-Context 生成资料快照，由 Runtime 交给 Model Gateway。模型返回完整工具请求时才进入工具系统；每次工具结算后重新组装下一步上下文。事件记录事实和 UI 更新，不用事件监听器隐式驱动另一套循环。
+`apps/server` 是组合根，注入仓储、凭证和模型工厂。单实例锁保存于数据目录内的 `server.lock`，允许数据卷父目录只读；启动同时检查旧版本目录旁锁，升级前先停旧服务。`application` 不依赖数据库驱动或厂商 SDK，`kernel` 仅依赖 contracts 与自定义 ModelPort。`sdk` 不拥有服务端状态，Web 只通过 SDK 访问服务。
 
-`apps/server` 是唯一后端装配点；应用、内核、状态、内容和扩展管理起初共进程。Worker 的独立进程提供执行边界，实际安全隔离仍需容器或 OS 能力。
+## 关键不变量
 
-## 状态所有权
+- 用户问题、候选回答、Run 与开始事件在同一事务内提交；每个会话最多一个 running Run，SQLite 部分唯一索引兜底。开始 / 终结 / 重命名递增会话 revision。
+- 请求携带 requestId 和 expectedRevision。相同标识、相同负载返回原 Run；相同标识不同负载返回冲突。不会因网络重发创建第二次模型调用。
+- 增量约每 250ms 先落库再暴露事件；终止立即提交。事件 seq 按会话单调递增。快照和游标同事务读取，重连从游标补读，SDK 对重复序号去重。
+- 停止传播 AbortSignal，并保留部分回答。页面断开不等于停止。重启将遗留运行标记 interrupted，不自动恢复模型调用。
+- 重新生成保留原完整答案，另建候选；仅在成功终结事务中替换。失败 / 停止候选留存但原答案继续展示。
+- 删除活动会话先取消再级联删除。仓储拒绝给已删除 / 已结束 Run 追加迟到结果。
+- 设置变更采用 revision，密钥先写新引用再提交配置，成功后清理旧引用。运行创建独立模型实例，使用不可变连接快照。密钥只在独立受限文件中；明文不落入数据库、错误响应或日志。
 
-| 对象 | 所有者 | 语义 |
-| --- | --- | --- |
-| Session / Branch | state/session | 对话历史和分支，不负责撤销外部动作 |
-| Task / Plan | state/task | 目标、约束、计划、验收，可跨多个 Run |
-| Run / Step | kernel/runtime 推进，state/run 持久化 | 一次执行 / 一次模型调用及其工具批次 |
-| Invocation | state/invocation | 工具意图、派发阶段、执行回执 |
-| Memory / Source | content | 带来源、作用域和版本的长期内容 |
-| Artifact / Revision | content/artifacts | 产物、文件引用、版本与验收记录 |
+## 尚未实现的扩展
 
-## 必须保留的语义
-
-1. 每个 Session 的当前主分支单写者，状态和关键事件同事务提交。
-2. 每步冻结模型配置、工具目录与上下文视图；Hook 修改参数后再校验并做最终权限决策。
-3. 外部副作用采用 intent / dispatching / settled 记录；结果未知先查询回执或人工核对，不直接重复写入。
-4. cancel 停止派发并收拢已开始动作，不能把取消当作副作用回滚。
-5. Skill 是按需读取的说明书；Hook 是生命周期扩展；Plugin 管理注册与资源回收。脚本都进入执行治理。
-6. Workflow 执行固定依赖图，Runtime 动态推进模型步骤。编排通过 RunCommandPort 调用应用实现。
-7. 子 Agent 有独立 Session、预算和权限上限，结果通过摘要和产物引用汇总。
-
-## 配置与凭证
-
-未来配置合并顺序：默认 → 部署 profile → 用户 → 项目 → 本次 Run 的允许覆盖项。安全权限取上限交集；项目不能扩大部署侧授权。Run 保存配置摘要，凭证只保存引用。当前没有配置加载器。
-
-## 详细设计
-
-[模块表](modules.md)、[技术选型](technology.md)、[协议规划](../protocols/README.md)、[原始 HTML](../../agent-architecture.html)、[详细 SVG](../../diagrams/agent-architecture.svg)。
+工具、权限执行、Task 验收、Skill / Hook、内容检索、Workflow、Worker 和多 Agent 仍为骨架。没有第二套循环或模拟实现。当前内核每个 Run 严格调用模型一次，未来扩展须保持现有取消、幂等和状态语义。详细 [模块关系](modules.md) 与 [ADR-0003](../adr/0003-local-web-chat.md)。

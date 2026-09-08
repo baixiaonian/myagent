@@ -1,10 +1,7 @@
-# sdk
+# @myagent/sdk
 
-Web / CLI 客户端协议封装。
+Web 的 HTTP 命令、SSE 订阅与去重投影。已实现本地 Web Chat v1 对应路径，其余完整 Agent 设计仍为骨架。
 
-状态：工程骨架。当前没有对应的 Agent 业务实现。
+公共入口：`src/index.ts`。
 
-- 入口：`src/index.ts`。
-- 允许的内部依赖：`@myagent/contracts`。
-- 开发前阅读 [模块关系](../../docs/architecture/modules.md) 和 [当前状态](../../docs/STATUS.md)。
-- 新增功能时同时更新上述文档、相关局部 AGENTS.md（规则有变化时）和 [迭代历史](../../docs/history/README.md)。
+遵循 [根开发约定](../../AGENTS.md)、[当前状态](../../docs/STATUS.md) 和 [聊天协议](../../docs/protocols/chat-v1.md)。职责和依赖详见 [模块关系](../../docs/architecture/modules.md)。

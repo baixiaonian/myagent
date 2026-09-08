@@ -9,5 +9,11 @@
     "checkJs": false,
     "types": ["node"]
   },
-  "include": ["vitest.config.ts", "tests/**/*.ts", "scripts/*.mjs"]
+  "include": [
+    "vitest.config.ts",
+    "tests/**/*.ts",
+    "scripts/*.mjs",
+    "playwright.config.ts",
+    "apps/web/vite.config.ts"
+  ]
 }

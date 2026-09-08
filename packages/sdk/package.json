@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Web / CLI 客户端协议封装",
+  "description": "Web 的 HTTP 命令、SSE 订阅与去重投影",
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b"

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "后端唯一装配入口；当前仅启动提示",
+  "description": "本地 API / SSE、校验、装配、恢复与静态托管",
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b",
@@ -11,13 +11,20 @@
     "start": "node dist/main.js"
   },
   "dependencies": {
-    "@myagent/application": "workspace:*",
-    "@myagent/kernel": "workspace:*",
-    "@myagent/state": "workspace:*",
-    "@myagent/content": "workspace:*",
+    "@fastify/static": "10.1.3",
     "@myagent/adapters": "workspace:*",
+    "@myagent/application": "workspace:*",
+    "@myagent/content": "workspace:*",
     "@myagent/extensions": "workspace:*",
+    "@myagent/kernel": "workspace:*",
+    "@myagent/observability": "workspace:*",
     "@myagent/orchestration": "workspace:*",
-    "@myagent/observability": "workspace:*"
+    "@myagent/state": "workspace:*",
+    "fastify": "5.12.3",
+    "proper-lockfile": "4.1.2",
+    "@myagent/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/proper-lockfile": "4.1.4"
   }
 }
