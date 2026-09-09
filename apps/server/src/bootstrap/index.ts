@@ -1,3 +1,8 @@
+/**
+ * 后端唯一组合根：装配 SQLite、凭证、模型工厂和应用服务，提供 HTTP / SSE 与 Web 静态资源。
+ * 本文件拥有进程锁及服务生命周期；路由负责边界校验，生成语义交给 ChatService。
+ * 日志和错误响应必须脱敏；浏览器断连只结束订阅，不终止后台 Run。
+ */
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -28,6 +33,7 @@ import {
   settingsSchema,
 } from "../routes/schemas.js";
 
+// 禁用 Fastify 默认逐请求日志，避免自动记录可能包含敏感参数的 URL。
 class LocalLogController extends LogController {
   constructor() {
     super({ disableRequestLogging: true });
@@ -42,12 +48,15 @@ export interface ServerOptions {
   modelFactory?: ModelFactory;
   timeoutMs?: number;
 }
+// 依次申请数据目录锁、数据库和凭证资源；初始化失败时释放已经拿到的资源。
+// 所有具体适配器在此实例化，上层用例接收契约和工厂而不感知驱动。
 export async function buildServer(options: ServerOptions) {
   mkdirSync(options.dataDir, { recursive: true, mode: 0o700 });
   // 兼容旧版本的目录旁锁；升级前必须先停止旧实例。
   if (await lockfile.check(options.dataDir, { stale: 10000 })) {
     throw new AppError("data_in_use", "数据目录正由另一个实例使用。", 503);
   }
+  // 锁放在可写数据卷内部，以支持父目录只读的普通用户容器；不依赖父目录可写。
   const release = await lockfile.lock(options.dataDir, {
     lockfilePath: join(options.dataDir, "server.lock"),
     stale: 10000,
@@ -81,6 +90,7 @@ export async function buildServer(options: ServerOptions) {
     await release();
     throw error;
   }
+  // 模型工厂支持测试注入；生产默认创建 OpenAIChatModel，每次运行使用独立配置实例。
   const settings = new SettingsService(
     store,
     credentials,
@@ -89,8 +99,10 @@ export async function buildServer(options: ServerOptions) {
       ((config, key) => new OpenAIChatModel(config.baseUrl, key, config.model)),
   );
   const chat = new ChatService(store, settings, options.timeoutMs);
+  // 正式接受请求之前修补上次遗留 Run；不把它们重新加入当前 active Map 或发起模型重试。
   store.recoverInterrupted();
   const streams = new Set<() => void>();
+  // 先关闭长连接使 Fastify 能退出，再取消活动模型并落终态；数据库和锁留到 onClose 释放。
   server.addHook("preClose", async () => {
     for (const end of streams) end();
     await chat.close();
@@ -99,6 +111,7 @@ export async function buildServer(options: ServerOptions) {
     store.close();
     await release();
   });
+  // 本地单用户仍需防御跨站访问与 DNS rebinding；校验 Host / Origin，而不仅依赖 loopback 监听。
   server.addHook("onRequest", async (request, reply) => {
     reply
       .header("X-Content-Type-Options", "nosniff")
@@ -120,6 +133,7 @@ export async function buildServer(options: ServerOptions) {
     const sameOrigin = `${request.protocol}://${request.headers.host}`;
     if (origin && origin !== sameOrigin && origin !== options.devOrigin)
       throw new AppError("invalid_origin", "不允许来自其他网站的请求。", 403);
+    // 没有 Origin 的浏览器跨站请求也必须拒绝；非浏览器本机客户端可不发送这些头。
     if (!origin && request.headers["sec-fetch-site"] === "cross-site")
       throw new AppError("invalid_origin", "不允许跨站请求。", 403);
     if (request.url.startsWith("/api/")) {
@@ -131,6 +145,7 @@ export async function buildServer(options: ServerOptions) {
         throw new AppError("invalid_content_type", "请求必须使用 JSON。", 415);
     }
   });
+  // 只公开 AppError 的安全消息；验证错误和未知异常统一提示，不把原始异常对象交给日志器。
   server.setErrorHandler((error, request, reply) => {
     const known = error instanceof AppError;
     const validation =
@@ -176,6 +191,7 @@ export async function buildServer(options: ServerOptions) {
       return { ok: true };
     },
   );
+  // 简单会话 CRUD 当前直接访问注入的仓储；涉及执行生命周期的生成、取消与删除由应用层协调。
   server.get("/api/v1/sessions", async () => ({
     sessions: store.listSessions(),
   }));
@@ -210,6 +226,7 @@ export async function buildServer(options: ServerOptions) {
     "/api/v1/sessions/:id/runs",
     { schema: { body: runSchema } },
     async (request, reply) =>
+      // start 已提交 Run 后立即返回 202；不把模型网络请求绑定到这条 HTTP 响应的存活时间。
       reply.status(202).send(chat.start(request.params.id, request.body)),
   );
   server.post<{ Params: { id: string }; Body: RegenerateInput }>(
@@ -229,11 +246,13 @@ export async function buildServer(options: ServerOptions) {
     async (request, reply) => {
       const sessionId = request.params.id;
       const snapshot = store.snapshot(sessionId);
+      // 自动重连时浏览器的 Last-Event-ID 优先于初始 after，防止每次都从旧快照游标重复补读。
       const after = Number(
         request.headers["last-event-id"] ?? request.query.after ?? 0,
       );
       if (!Number.isSafeInteger(after) || after < 0 || after > snapshot.cursor)
         throw new AppError("invalid_cursor", "事件游标无效，请重新加载会话。");
+      // SSE 接管原始响应，由本路由管理结束和背压；游标检查必须在发送响应头之前完成。
       reply.hijack();
       reply.raw.writeHead(200, {
         "Content-Type": "text/event-stream; charset=utf-8",
@@ -248,6 +267,7 @@ export async function buildServer(options: ServerOptions) {
       const drain = () => {
         blocked = false;
       };
+      // 从已提交事件日志读取，和模型回调解耦；缓冲区满时暂停下一轮读取，等待 drain。
       const poll = () => {
         if (closed || blocked) return;
         try {
@@ -255,6 +275,7 @@ export async function buildServer(options: ServerOptions) {
             const writable = reply.raw.write(
               `id: ${event.seq}\ndata: ${JSON.stringify(event)}\n\n`,
             );
+            // write 返回 false 仍表示该事件已入 socket 缓冲，因此先推进游标再暂停，不能重复写同一帧。
             cursor = event.seq;
             if (!writable) {
               blocked = true;
@@ -269,9 +290,11 @@ export async function buildServer(options: ServerOptions) {
         }
       };
       const timer = setInterval(poll, 250);
+      // 空注释帧只保活，不消费业务事件序号；浏览器不会把它当 ChatEvent。
       const heartbeat = setInterval(() => {
         if (!closed && !blocked) blocked = !reply.raw.write(": heartbeat\n\n");
       }, 15000);
+      // 订阅清理只释放定时器和 socket 监听，不调用 chat.cancel；生成由用户命令或服务退出终止。
       const end = () => {
         if (closed) return;
         closed = true;
@@ -287,6 +310,7 @@ export async function buildServer(options: ServerOptions) {
       poll();
     },
   );
+  // 生产托管编译后的 Web；未命中页面路由可回退 index.html，API 或缺失资产不能伪装成页面成功。
   const webRoot = fileURLToPath(new URL("../../../web/dist", import.meta.url));
   if (options.serveWeb !== false && existsSync(webRoot)) {
     await server.register(staticPlugin, { root: webRoot, wildcard: false });

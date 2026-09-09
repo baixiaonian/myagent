@@ -1,3 +1,4 @@
+# 跨编辑器基础格式：UTF-8、LF 和统一缩进；具体源码格式由 Biome 检查。
 root = true
 [*]
 charset = utf-8

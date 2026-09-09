@@ -1,3 +1,7 @@
+/**
+ * 纯内核回归：验证完整问答裁剪、单次模型流、失败、超时与取消。
+ * 内存 ModelPort 替身用于制造明确边界条件，不作为真实模型联通证据。
+ */
 import { describe, expect, it } from "vitest";
 import { AppError, type Message } from "../../packages/contracts/src/index.js";
 import {
@@ -6,6 +10,7 @@ import {
   runChat,
 } from "../../packages/kernel/src/index.js";
 
+// 构造带明确 replyToId 的完整问答，size 控制字符预算，避免依赖某一厂商 token 算法。
 function pair(i: number, size = 1): Message[] {
   const common = {
     sessionId: "s",
@@ -91,6 +96,7 @@ describe("single-call runtime", () => {
     ).rejects.toMatchObject({ code: "incomplete_stream" });
   });
   it("terminates timeout and cancellation even if iterator ignores the signal", async () => {
+    // 故意让 next 永不返回且忽略取消，验证内核自身的超时 / 取消竞争能终结等待。
     const hang: ModelPort = {
       stream: () => ({
         [Symbol.asyncIterator]: () => ({ next: () => new Promise(() => {}) }),

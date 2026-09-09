@@ -1,3 +1,8 @@
+/**
+ * Docker 产品验收：创建独立 Compose 项目、假模型和测试卷，检查打包、持久化与故障恢复。
+ * 包含停止、SIGKILL、备份恢复和资源删除，仅允许作用于本脚本创建的资源。
+ * 不读取用户数据或真实密钥；结果与清理状态写入 .cache/acceptance。
+ */
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -6,6 +11,7 @@ import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 const image = process.env.MYAGENT_TEST_IMAGE ?? "myagent:acceptance-v1";
+// 唯一项目名及显式 ownedVolumes 集合限定故障注入与删除范围，不复用日常运行的产品卷。
 const project = `myagent-acceptance-${Date.now()}`;
 const temp = mkdtempSync(join(tmpdir(), `${project}-`));
 const file = join(temp, "compose.json");
@@ -25,6 +31,7 @@ function passed(name) {
   report.checks.push(name);
   console.info(`PASS ${name}`);
 }
+// 等待可观察到的就绪状态而非固定长睡眠；超时后让 finally 统一回收验收资源。
 async function until(check, timeout = 45000) {
   const end = Date.now() + timeout;
   while (Date.now() < end) {
@@ -46,6 +53,7 @@ async function api(path, method = "GET", data) {
   return response.status === 204 ? null : response.json();
 }
 let container;
+// 每次重建都重新读取容器 ID 和随机端口，防止向上一个实例发送验收请求。
 async function ready() {
   container = compose("ps", "-q", "myagent").trim();
   await until(
@@ -62,6 +70,7 @@ async function ready() {
   base = `http://${port}`;
 }
 try {
+  // 从产品 Compose 派生验收配置，改成唯一资源名与随机 loopback 端口，覆盖真实打包路径。
   const config = JSON.parse(docker("compose", "config", "--format", "json"));
   config.name = project;
   const service = config.services.myagent;
@@ -217,6 +226,7 @@ try {
     const value = await api(`/sessions/${session.id}`);
     return value.activeRun && value.messages.at(-1).content.length > 0;
   });
+  // 仅杀掉此验收项目的容器以模拟来不及提交终态的崩溃；等待锁租约过期后再启动检查恢复。
   compose("kill", "-s", "SIGKILL", "myagent");
   await delay(10500);
   compose("up", "-d", "--no-build", "myagent");
@@ -257,6 +267,7 @@ try {
       .trim()
       .split("\n");
     for (const volume of remaining) {
+      // 名称前缀只是候选筛选，必须同时属于本脚本创建集合才允许删除。
       if (ownedVolumes.has(volume)) docker("volume", "rm", volume);
     }
     report.cleanup = true;

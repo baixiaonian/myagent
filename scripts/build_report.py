@@ -1,9 +1,12 @@
+# 历史架构报告生成器：读取 research/upstream 只读快照，固定源码 SHA / 行号并输出 HTML 与来源清单。
+# 运行会重建历史研究交付物；普通聊天构建不依赖它，本轮注释维护不执行报告重建。
 from pathlib import Path
 import html, json, subprocess, re
 
 ROOT = Path(__file__).resolve().parents[1]
 repos = {"pi": "earendil-works/pi", "codex": "openai/codex", "deepseek-harness": "deepseek-ai/deepseek-harness"}
 snapshots = {}
+# 先固定每个参考仓库当前 SHA，后续源码链接绑定该版本，避免漂移到最新分支。
 for key, repo in repos.items():
     sha = subprocess.check_output(["git", "-C", str(ROOT / 'research/upstream' / key), "rev-parse", "HEAD"], text=True).strip()
     snapshots[key] = {"repo": repo, "sha": sha}
@@ -31,6 +34,7 @@ sources = [
 ('D10','deepseek-harness','docs/architecture.md',7,29,'组合方式','服务、事件、可撤销效果及按 profile / bundle 组装的插件树。'),
 ]
 source_map = {}
+# 逐条校验行号存在，再构造固定提交链接；不把未经定位的说明包装成源码证据。
 for sid, key, path, start, end, title, finding in sources:
     lines = (ROOT/'research/upstream'/key/path).read_text().splitlines()
     assert 1 <= start <= end <= len(lines), (sid, len(lines))
@@ -38,6 +42,7 @@ for sid, key, path, start, end, title, finding in sources:
     source_map[sid] = {"id":sid,"repository":key,"path":path,"start":start,"end":end,"title":title,"finding":finding,"sha":s['sha'],"url":f"https://github.com/{s['repo']}/blob/{s['sha']}/{path}#L{start}-L{end}"}
 (ROOT/'research/source-manifest.json').write_text(json.dumps({"retrieved":"2026-09-07","snapshots":snapshots,"sources":list(source_map.values())},ensure_ascii=False,indent=2))
 
+# 渲染来源编号与固定链接，章节通过这些编号关联前面已经校验的源码。
 def refs(*ids):
     return ' '.join(f'<a class="ref" href="{source_map[i]["url"]}" target="_blank" rel="noreferrer">{i} ↗</a>' for i in ids)
 def table(headers, rows):

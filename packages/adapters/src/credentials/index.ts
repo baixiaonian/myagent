@@ -1,3 +1,7 @@
+/**
+ * 本地凭证适配器：按不透明引用独立保存密钥，提供读取、更换与删除。
+ * 目录 0700、文件 0600；临时文件同步后原子替换。文件未加密，不能把权限控制称为加密。
+ */
 import { randomUUID } from "node:crypto";
 import {
   chmodSync,
@@ -23,6 +27,7 @@ export class FileCredentialStore implements CredentialStore {
     chmodSync(directory, 0o700);
     this.path = join(directory, "credentials.json");
     if (existsSync(this.path)) {
+      // 拒绝现有凭证路径指向符号链接，避免无意读写到数据目录之外的文件。
       if (lstatSync(this.path).isSymbolicLink())
         throw new AppError(
           "credential_storage",
@@ -32,6 +37,7 @@ export class FileCredentialStore implements CredentialStore {
       chmodSync(this.path, 0o600);
     }
   }
+  // 缺少文件表示尚未存密钥；文件损坏必须报错，不能当作空配置覆盖掉原内容。
   private load(): Record<string, string> {
     if (!existsSync(this.path)) return {};
     try {
@@ -55,6 +61,7 @@ export class FileCredentialStore implements CredentialStore {
   private save(data: Record<string, string>): void {
     const temp = `${this.path}.${randomUUID()}.tmp`;
     try {
+      // 随机同目录临时文件以独占方式创建，确保权限从首次写入就受限，且可在同文件系统内替换。
       const fd = openSync(temp, "wx", 0o600);
       try {
         writeFileSync(fd, JSON.stringify(data));
@@ -62,6 +69,7 @@ export class FileCredentialStore implements CredentialStore {
       } finally {
         closeSync(fd);
       }
+      // 写完并 fsync 临时文件后才替换正式路径，读者只会看到完整旧版或新版 JSON。
       renameSync(temp, this.path);
     } catch {
       throw new AppError(

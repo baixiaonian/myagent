@@ -1,3 +1,4 @@
+# 本地 profile 预留，不会替代当前 server 的环境变量配置。
 # local 部署配置预留；当前不加载。
 schemaVersion: 1
 profile: local

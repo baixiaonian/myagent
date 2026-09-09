@@ -1,3 +1,4 @@
+# Docker 构建上下文边界：排除本地依赖、测试缓存、研究快照与敏感运行数据。
 .git
 **/node_modules
 **/dist

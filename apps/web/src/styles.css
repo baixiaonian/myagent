@@ -1,3 +1,5 @@
+/* 聊天工作台样式：统一浅色主题、会话侧栏、消息、输入区与设置弹窗。
+ * 后部媒体查询负责窄屏抽屉和可访问性；仅改变展示，不决定运行状态。 */
 :root {
   font-family:
     "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
@@ -47,6 +49,7 @@ button {
 a {
   color: var(--green);
 }
+/* 主布局：侧栏固定宽度，中央工作区占据剩余空间。 */
 .app-shell {
   height: 100dvh;
   display: flex;
@@ -267,6 +270,7 @@ a {
   border-radius: 50%;
   background: #79a184;
 }
+/* 消息滚动容器与输入区分开，流式追加时由 App 决定是否追尾。 */
 .conversation {
   overflow-y: auto;
   flex: 1;
@@ -358,6 +362,7 @@ a {
 .setup-prompt svg:last-child {
   transform: rotate(45deg);
 }
+/* 输入区固定在工作区底部；textarea 高度由 App 依据草稿自适应。 */
 .composer-area {
   position: relative;
   width: 100%;
@@ -481,6 +486,7 @@ a {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+/* Markdown 排版与长内容约束，避免表格或代码把工作区横向撑开。 */
 .markdown {
   overflow-wrap: anywhere;
 }
@@ -850,6 +856,7 @@ a {
     opacity: 0.3;
   }
 }
+/* 尊重系统减少动画设置，关闭装饰性旋转与脉冲。 */
 @media (prefers-reduced-motion: reduce) {
   .spin,
   .thinking-dots span,
@@ -860,6 +867,7 @@ a {
     transition: none;
   }
 }
+/* 窄屏改为抽屉侧栏，通过遮罩与按钮显式控制，不挤压聊天内容。 */
 @media (max-width: 760px) {
   .sidebar {
     position: fixed;
@@ -965,6 +973,7 @@ a {
     margin-top: 20px;
   }
 }
+/* 设置和管理弹窗的实际组件样式，包含宽弹窗、密钥输入与操作区。 */
 .modal-heading {
   display: flex;
   align-items: center;
@@ -1052,6 +1061,7 @@ a {
   align-items: center;
   margin-top: 18px;
 }
+/* 高亮代码的独立滚动区与复制工具栏，复制逻辑从 pre 读取纯文字。 */
 .code-frame {
   border: 1px solid #e0e6de;
   border-radius: 9px;

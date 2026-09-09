@@ -1,3 +1,7 @@
+/**
+ * 文档链接检查回归：验证相对文件和锚点，排除外部 URL 及代码块中的示例链接。
+ * 使用临时文件夹，不修改真实项目知识库。
+ */
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -14,6 +18,7 @@ it("reports missing relative knowledge links without treating URLs or examples a
   const root = mkdtempSync(join(tmpdir(), "myagent-docs-"));
   roots.push(root);
   writeFileSync(join(root, "existing.md"), "# Existing");
+  // 同一份输入同时含合法锚点、失效路径、URL 和围栏示例；预期只报告真实缺失文件。
   const markdown = [
     "[existing](existing.md#section)",
     "[missing](missing.md)",

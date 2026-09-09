@@ -1,3 +1,7 @@
+/**
+ * OpenAI 兼容协议替身：监听 loopback，记录请求并返回可控文字分片、错误或挂起流。
+ * 只使用测试密钥；用于检验真实 HTTP 传输和客户端行为，不模拟模型推理质量。
+ */
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 export interface CapturedRequest {
@@ -21,6 +25,7 @@ export async function mockProvider(port = 0) {
     requests.push(input);
     const question = input.messages.at(-1)?.content ?? "";
     const model = input.model;
+    // 通过模型名选择固定失败场景；故意在上游错误中回显假鉴权信息，检验应用是否正确脱敏。
     const status = { unauthorized: 401, missing: 404, limited: 429, bad: 400 }[
       model
     ];
@@ -51,6 +56,7 @@ export async function mockProvider(port = 0) {
       }, delay);
       timers.add(timer);
     };
+    // 挂起模式不返回终态，用于验证超时和取消；连接关闭事件负责清理所有调度定时器。
     if (model === "hang") return;
     const markdown =
       "**这是一条测试回答**\n\n| 项目 | 内容 |\n| --- | --- |\n| 模式 | 本地测试 |\n\n```js\nconst hello = '你好';\nconsole.log(hello);\n```\n\n<script>window.injected = true</script>\n<img src=x onerror=alert(1)>\n[jump](javascript:alert(1))\n";
@@ -81,6 +87,7 @@ export async function mockProvider(port = 0) {
             object: "chat.completion.chunk",
             choices: [{ index: 0, delta: { content }, finish_reason: null }],
           });
+          // 只发一个文字块便结束 HTTP，故意缺失 finish_reason，让适配器必须报告不完整流。
           if (model === "broken" && index === 0) response.end();
         },
         10 + index * delay,

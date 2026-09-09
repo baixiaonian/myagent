@@ -1,3 +1,5 @@
+# 原始完整 Agent 架构图生成器：从节点与显式路径生成 SVG、Draw.io 和布局清单。
+# 输出是长期设计基线，不等同于当前已实现模块；重建会覆盖对应历史图表。
 from pathlib import Path
 from html import escape
 import json
@@ -5,6 +7,7 @@ import json
 ROOT = Path(__file__).resolve().parents[1]
 W, H = 1540, 1500
 nodes = []
+# 收集节点的职责、配色和绝对坐标，供 SVG 与 Draw.io 使用同一布局。
 def box(id, x, y, w, h, title, lines, tone='green'):
     nodes.append(dict(id=id,x=x,y=y,w=w,h=h,title=title,lines=lines,tone=tone))
 
@@ -61,6 +64,7 @@ def cell(id,x,y,w,h,value,style):
     cells.append(f'<mxCell id="{id}" value="{escape(value,quote=True)}" style="{style}" vertex="1" parent="1"><mxGeometry x="{x}" y="{y}" width="{w}" height="{h}" as="geometry"/></mxCell>')
 cell('frame-core',385,385,780,600,'后端进程内 · 稳定内核与显式接口','rounded=1;html=1;fillColor=#f5f9f5;strokeColor=#b7cbbd;dashed=1;verticalAlign=top;spacingTop=10;fontSize=16')
 cell('frame-exec',385,1050,780,355,'执行边界 · 通过 ExecutionPort 更换环境','rounded=1;html=1;fillColor=#fffaf3;strokeColor=#dcc39e;verticalAlign=top;spacingTop=10;fontSize=16')
+# 显式折线路径避免自动布线穿过其他节点，输出两种格式时保持边的含义一致。
 for i,(a,b,points,label,lp,dashed) in enumerate(edges):
     ps=' '.join(f'{x},{y}' for x,y in points)
     svg.append(f'<polyline points="{ps}" fill="none" stroke="#fffefb" stroke-width="7"/>')

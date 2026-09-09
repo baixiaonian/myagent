@@ -1,3 +1,7 @@
+/**
+ * 架构检查器回归：在临时微型工作区验证合法导入、深路径、纯内核边界和依赖环。
+ * 测试对象是检查规则，不为占位包制造业务能力；清理仅删除本用例创建的目录。
+ */
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -8,6 +12,7 @@ import {
 } from "../../scripts/check-architecture.mjs";
 
 const roots: string[] = [];
+// 只构造足以表达依赖关系的最小工作区；占位源码用于检查器输入，不代表新增业务实现。
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), "myagent-boundary-"));
   roots.push(root);
@@ -75,6 +80,7 @@ describe("workspace boundary guard", () => {
   });
   it("rejects cycles even when both dependency directions are allowed", () => {
     const { root, write, modules } = fixture();
+    // 刻意让两条方向都合法，再检查有向环，避免“允许导入”被错误等同于“允许循环”。
     modules[0]?.allowedDependencies.push("@myagent/kernel");
     write("config/modules.json", { modules });
     write("packages/contracts/package.json", {

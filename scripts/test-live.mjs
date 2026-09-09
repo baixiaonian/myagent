@@ -1,3 +1,8 @@
+/**
+ * 真实模型验收脚本：经本机产品 API 验证多轮、幂等、重新生成和流式停止。
+ * 执行会产生模型调用费用，需本轮明确授权；不读凭证文件、不改用户配置或已有会话。
+ * 只记录本脚本创建的会话和脱敏验收结果到 .cache/acceptance。
+ */
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { setTimeout as delay } from "node:timers/promises";
@@ -34,6 +39,7 @@ function passed(name) {
   results.checks.push(name);
   console.info(`PASS ${name}`);
 }
+// 从接受快照的游标开始观测 SSE，累计增量后与最终已保存答案比较，验证传输和持久化一致。
 async function observe(accepted, cancelOnText = false) {
   const { run, snapshot } = accepted;
   const abort = new AbortController();
@@ -54,6 +60,7 @@ async function observe(accepted, cancelOnText = false) {
     while (!terminal) {
       const chunk = await reader.read();
       if (chunk.done) break;
+      // 网络分片可能切开 UTF-8 字符或事件帧；流式解码后按空行拼出完整 SSE 数据。
       buffer += decoder.decode(chunk.value, { stream: true });
       while (buffer.includes("\n\n")) {
         const end = buffer.indexOf("\n\n");
@@ -71,6 +78,7 @@ async function observe(accepted, cancelOnText = false) {
         ) {
           parts++;
           length += event.delta.length;
+          // 收到真实文字后再发停止，确保验收的是“保留部分回答”，而不是请求尚未开始就取消。
           if (cancelOnText && !cancelRequested) {
             cancelRequested = true;
             await api(`/runs/${run.id}/cancel`, "POST", {});
@@ -134,6 +142,7 @@ try {
   });
   assert.deepEqual(await api(`/sessions/${session.id}`), beforeTest);
   passed("已保存连接的实际模型测试，不写聊天历史");
+  // 每次产生新的随机暗号，第二轮不重复给出答案，避免固定回复被误判为多轮上下文有效。
   const marker = `松果-${crypto.randomUUID().slice(0, 8)}`;
   const firstInput = {
     requestId: crypto.randomUUID(),
@@ -212,6 +221,7 @@ try {
   console.error(results.failure);
   process.exitCode = 1;
 } finally {
+  // 成功与失败均保存有限验收证据；不写原始密钥或整段用户历史，报告权限限定为当前用户。
   mkdirSync(".cache/acceptance", { recursive: true });
   writeFileSync(
     ".cache/acceptance/live-model.json",

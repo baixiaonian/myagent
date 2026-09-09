@@ -1,3 +1,5 @@
+# 持续集成入口：在 Node 24 上验证工程并运行独立 Chromium 假模型流程。
+# 不配置真实模型密钥，不把工程测试标为真实服务商验收。
 name: verify
 on: [push, pull_request]
 permissions:
@@ -17,4 +19,5 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
       - run: pnpm exec playwright install --with-deps chromium
+      # 工程检查后再跑浏览器假模型流程，保留两类验证的独立结果。
       - run: pnpm test:e2e

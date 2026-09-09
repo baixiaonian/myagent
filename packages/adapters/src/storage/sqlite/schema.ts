@@ -1,6 +1,11 @@
+/**
+ * Drizzle 表映射：为 SQLite 列和 JSON 载荷提供 TypeScript 类型。
+ * 实际建表、外键及唯一索引由 migrations/0001_chat.sql 执行；此文件不是迁移执行器。
+ */
 import type { ChatEvent, Message, Run } from "@myagent/contracts";
 import type { StoredSettings } from "@myagent/state";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+// revision 参与命令并发判断，seq 分配持久事件序号，二者有不同推进频率。
 export const sessions = sqliteTable("sessions", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
@@ -19,6 +24,7 @@ export const messages = sqliteTable("messages", {
   replyToId: text("reply_to_id"),
   createdAt: text("created_at").notNull(),
 });
+// 可索引的 status / requestId 单独存列，完整 DTO 存 JSON；更新时必须同步两种表示。
 export const runs = sqliteTable("runs", {
   id: text("id").primaryKey(),
   sessionId: text("session_id").notNull(),
@@ -31,6 +37,7 @@ export const events = sqliteTable("events", {
   seq: integer("seq").notNull(),
   data: text("data", { mode: "json" }).$type<ChatEvent>().notNull(),
 });
+// 只存非密钥配置和 credentialRef；单行约束与其他唯一索引在 SQL 迁移中定义。
 export const settings = sqliteTable("settings", {
   id: integer("id").primaryKey(),
   data: text("data", { mode: "json" }).$type<StoredSettings>().notNull(),

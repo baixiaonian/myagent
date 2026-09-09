@@ -1,3 +1,5 @@
+# 当前聊天实现链路图生成器：以同一组布局和文字输出 SVG / Draw.io，并核对源码路径。
+# 只说明指定提交的实现快照；不调用模型、不读取设置，不替代产品功能测试。
 """生成当前聊天链路的 SVG / Draw.io；不读取配置、凭证或研究快照。"""
 from pathlib import Path
 from html import escape
@@ -27,6 +29,7 @@ def text(id,x,y,value,size=18,color=None,bold=False):
  cell(id,x,y-size, W-x-20,size+10,escape(value),f'text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=PingFang SC;fontSize={size};fontColor={color};fontStyle={1 if bold else 0};spacing=0')
  texts.append({'x':x,'y':y,'text':value,'size':size})
 
+# 同一张卡片输出 SVG 图形和可编辑文字，明确坐标避免 Draw.io 自动换行造成布局漂移。
 def card(id,x,y,w,h,title,tag,lines,paths=(),tone='blue'):
  fill,stroke=PALETTE[tone];nodes[id]={'x':x,'y':y,'w':w,'h':h}
  svg.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>')
@@ -51,6 +54,7 @@ def card(id,x,y,w,h,title,tag,lines,paths=(),tone='blue'):
   yy=y+h-19-(len(paths)-1-i)*20
   cell(f'{id}-path-{i}',x+19,yy-12.5,w-38,18,escape(p),f'text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Menlo;fontSize=12.5;fontColor={C[tone]};spacing=0')
 
+# 连线绑定节点及显式路径；额外绘制箭头多边形以兼容原生 SVG 转 PNG。
 def edge(a,b,pts,tone='blue',label=None,lp=None,dashed=False):
  ident=f'edge-{len(edges)}';color=C[tone]
  svg.append(f'<polyline points="{" ".join(f"{x},{y}" for x,y in pts)}" fill="none" stroke="{color}" stroke-width="2.5"'+(' stroke-dasharray="6 5"' if dashed else '')+f'/>')

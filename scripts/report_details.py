@@ -1,3 +1,6 @@
+# 历史 HTML 报告的内容构建模块：接收 section / table / refs 渲染函数，组织技术选型和目录等章节。
+# 只返回报告片段，不启动产品、不读取用户凭证；其中规划描述属于原设计阶段。
+# 渲染器由主报告注入，内容模块不自行访问网络；保持表格与章节样式一致。
 def build_details(section, table, refs):
     def doc(label, url):
         return f'<a href="{url}" target="_blank" rel="noreferrer">{label} ↗</a>'

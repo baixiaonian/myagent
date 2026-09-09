@@ -1,7 +1,12 @@
+/**
+ * 项目知识检查器：验证必需文档、模块知识地图、相对链接及迭代索引。
+ * 跳过依赖、产物和上游快照；只能发现结构缺失，文档与代码的语义一致性仍需人工审查。
+ */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+// 先移除围栏代码块，再检查相对链接并去掉锚点；示例、外部 URL 不应被当作本地文件。
 export function missingLinks(markdown, file) {
   const missing = [];
   const prose = markdown.replace(/```[\s\S]*?```/g, "");
@@ -17,6 +22,7 @@ export function missingLinks(markdown, file) {
 
 export function checkDocs(root) {
   const errors = [];
+  // 这里列出新上下文必须具备的知识入口；新增结构性规范时需同步这份清单或现有知识链接。
   const required = [
     "README.md",
     "AGENTS.md",
@@ -66,6 +72,7 @@ export function checkDocs(root) {
       errors.push(`Module missing from knowledge map: ${module.path}`);
     }
   }
+  // 只遍历项目知识，不进入研究快照、依赖和缓存，以免第三方文档干扰产品检查。
   function walk(dir) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (
@@ -90,6 +97,7 @@ export function checkDocs(root) {
   }
   walk(root);
   const history = resolve(root, "docs/history");
+  // 每篇带日期的历史必须被索引引用，避免新上下文无法发现已完成迭代。
   if (existsSync(history) && existsSync(resolve(history, "README.md"))) {
     const index = readFileSync(resolve(history, "README.md"), "utf8");
     for (const file of readdirSync(history)) {

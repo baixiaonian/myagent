@@ -1,3 +1,7 @@
+/**
+ * 聊天集成回归：以真实本地 HTTP 假模型、SQLite 和 Server 装配验证持久化与协议边界。
+ * 覆盖幂等、SSE 重放、取消、重启、迟到写入、配置及凭证脱敏；每例独立临时目录。
+ */
 import { randomUUID } from "node:crypto";
 import {
   chmodSync,
@@ -42,12 +46,14 @@ function start(id: string, revision: number, content = "你好") {
     content,
   });
 }
+// 轮询真实仓储终态而非假定固定耗时，让用例同时覆盖异步生成和最终持久化。
 async function terminal(id: string): Promise<Run> {
   await expect
     .poll(() => app.store.getRun(id).status, { timeout: 4000 })
     .not.toBe("running");
   return app.store.getRun(id);
 }
+// 每个用例独占数据目录与临时模型端口，防止历史、凭证或活动 Run 在用例之间串扰。
 beforeEach(async () => {
   dir = mkdtempSync(join(tmpdir(), "myagent-test-"));
   provider = await mockProvider();
@@ -81,6 +87,7 @@ describe("durable chat over real compatible HTTP", () => {
       "stream",
     ]);
     expect(app.store.getRun(two.run.id).usage).toBeNull();
+    // 同一事件应用两次后仍应与数据库快照一致，验证幂等投影而不仅是事件条数。
     const events = app.store.events(session.id, 0);
     let reduced = before;
     for (const event of events) {
@@ -196,6 +203,7 @@ describe("durable chat over real compatible HTTP", () => {
   it("marks orphan runs interrupted across restart and persists settings and history", async () => {
     await configure();
     const s = app.store.createSession();
+    // 直接写入 running 但不创建内存执行句柄，模拟进程退出遗留；重启不得因此再次调用模型。
     const orphan = app.store.beginRun({
       sessionId: s.id,
       expectedRevision: 0,
@@ -374,6 +382,7 @@ describe("protocol, errors and credentials", () => {
 
 it("does not expose a provider-echoed key in errors or logs", async () => {
   await app.server.close();
+  // 收集实际日志器输出，同时检查错误响应，防止只做 API 脱敏却把上游密钥写进日志。
   const logs: string[] = [];
   app = await buildServer({
     dataDir: dir,
@@ -417,6 +426,7 @@ it("starts with a writable mounted data directory and a read-only parent", async
   const parent = join(dir, "readonly-parent");
   const mounted = join(parent, "data");
   mkdirSync(mounted, { recursive: true, mode: 0o700 });
+  // 模拟容器挂载卷父目录只读；finally 恢复权限仅用于清理本例临时目录。
   chmodSync(parent, 0o555);
   try {
     app = await buildServer({ dataDir: mounted, serveWeb: false });

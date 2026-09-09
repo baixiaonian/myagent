@@ -1,3 +1,4 @@
+# Git 跟踪边界：仅提交可复现的源码与知识，排除运行数据、凭证、依赖和构建产物。
 node_modules/
 dist/
 coverage/

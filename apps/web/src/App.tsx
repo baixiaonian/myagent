@@ -1,3 +1,8 @@
+/**
+ * 聊天工作台：管理会话选择、草稿、模型设置入口、消息展示及移动侧栏。
+ * 所有后端访问经 ChatClient；服务端快照和 SSE 是历史与运行状态的依据。
+ * 重点维护迟到响应隔离、幂等重发、输入法 Enter、重新生成展示及用户阅读位置。
+ */
 import {
   ApiError,
   applyEvent,
@@ -45,6 +50,8 @@ interface Pending {
   kind: "send" | "regenerate";
   input: RunInput | RegenerateInput;
 }
+// 同一问题可能有多个答案版本：生成中优先展示候选，候选失败则回到最后成功答案。
+// 已 superseded 的旧版本不再显示；没有成功答案时仍展示最后一次失败或停止的部分内容。
 function visibleAnswers(messages: Message[]): Message[] {
   return messages
     .filter((message) => message.role === "user")
@@ -67,6 +74,7 @@ export default function App() {
     new URLSearchParams(location.search).get("session"),
   );
   const [snapshot, setSnapshot] = useState<SessionSnapshot | null>(null);
+  // 草稿按会话保留在当前页面内存；生成中的新草稿不提交，也不会因新消息到达而被清空。
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -82,12 +90,14 @@ export default function App() {
   const [title, setTitle] = useState("");
   const [manageBusy, setManageBusy] = useState(false);
   const [showBottom, setShowBottom] = useState(false);
+  // 异步回调读取当前选择，避免旧会话的迟到 HTTP 结果覆盖刚切换的页面。
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
   const scroll = useRef<HTMLDivElement>(null);
   const stickBottom = useRef(true);
   const composing = useRef(false);
   const textarea = useRef<HTMLTextAreaElement>(null);
+  // 只缓存结果不确定的命令，供用户下一次发送复用 requestId；不会自行重试或持续计费。
   const pending = useRef(new Map<string, Pending>());
   const draftKey = selected ?? "new";
   const draft = drafts[draftKey] ?? "";
@@ -98,6 +108,7 @@ export default function App() {
     const result = await client.listSessions();
     setSessions(result.sessions);
   }, []);
+  // 同会话只接受不落后于当前 cursor 的快照，避免 HTTP 返回慢于 SSE 时把已显示文字回滚。
   const acceptSnapshot = useCallback((next: SessionSnapshot) => {
     if (selectedRef.current !== next.session.id) return;
     setSnapshot((current) =>
@@ -122,6 +133,8 @@ export default function App() {
       disposed = true;
     };
   }, []);
+  // 切换会话先读取带 cursor 的完整快照，再从同一游标订阅，覆盖两次请求之间的事件。
+  // 下面的清理只解除订阅，用户关闭或刷新页面不会中止后端生成。
   // biome-ignore lint/correctness/useExhaustiveDependencies: reload 是用户主动重连的触发器。
   useEffect(() => {
     const url = new URL(location.href);
@@ -191,6 +204,7 @@ export default function App() {
     };
   }, [selected, reload, acceptSnapshot, refreshList]);
   useEffect(() => {
+    // 只有用户仍在追尾时才自动滚动；向上阅读后由“回到底部”按钮重新启用。
     if (snapshot && stickBottom.current && scroll.current)
       scroll.current.scrollTop = scroll.current.scrollHeight;
   }, [snapshot]);
@@ -216,6 +230,7 @@ export default function App() {
   function updateDraft(value: string) {
     setDrafts((old) => ({ ...old, [draftKey]: value }));
   }
+  // 发送与重新生成共用并发门禁；重新生成不提交新问题，也不消耗输入框里正在编辑的草稿。
   async function send(kind: "send" | "regenerate" = "send") {
     if (submitting || busy || loading || (kind === "send" && !draft.trim()))
       return;
@@ -241,6 +256,7 @@ export default function App() {
         setSelected(id);
         setSessions((old) => [session, ...old]);
       }
+      // 若上次网络结果不确定且操作内容一致，复用完整原命令（包括旧版本号），让服务端幂等命中。
       const previous = pending.current.get(id);
       const same =
         previous?.kind === kind &&
@@ -261,6 +277,7 @@ export default function App() {
           : await client.regenerate(id, input);
       pending.current.delete(id);
       acceptSnapshot(accepted.snapshot);
+      // 只清除与本次已接受问题一致的草稿；请求期间用户继续输入的内容必须保留。
       if (kind === "send")
         setDrafts((old) => ({
           ...old,
@@ -270,6 +287,7 @@ export default function App() {
       await refreshList();
     } catch (reason) {
       if (!id || selectedRef.current === id) setError(errorText(reason));
+      // 明确的 HTTP 错误可释放待提交标识；status=0 的网络错误不知服务端是否落库，保留原命令。
       if (id && reason instanceof ApiError && reason.status !== 0)
         pending.current.delete(id);
       if (id) {
@@ -283,6 +301,7 @@ export default function App() {
       setSubmitting(false);
     }
   }
+  // 等待后端取消并提交终态，再读取快照；不只在浏览器把“生成中”按钮隐藏。
   async function stop() {
     if (!snapshot?.activeRun) return;
     try {
@@ -306,6 +325,7 @@ export default function App() {
           return next;
         });
       } else {
+        // 重命名前重新读取版本；真正的并发冲突仍由服务端判断，避免覆盖其他页面的修改。
         const fresh = await client.session(manage.session.id);
         await client.rename(manage.session.id, title, fresh.session.revision);
         if (selected === manage.session.id)
@@ -660,6 +680,7 @@ export default function App() {
                 composing.current = false;
               }}
               onKeyDown={(event) => {
+                // Enter 只有在输入法组合结束后才发送；同时检查组合状态、原生标记与兼容 keyCode 229。
                 if (
                   event.key === "Enter" &&
                   !event.shiftKey &&

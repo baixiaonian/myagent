@@ -1,7 +1,10 @@
+# 本地聊天产品镜像：构建阶段编译工作区与原生 SQLite 依赖，运行阶段用普通用户启动统一服务。
+# 用户数据仅写入 /data 持久卷；本文件不打包宿主凭证或数据库。
 FROM node:24-bookworm-slim AS build
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 WORKDIR /app
+# 构建时固定 pnpm 版本，避免宿主全局工具影响依赖解析。
 RUN corepack enable && corepack prepare pnpm@11.7.0 --activate
 RUN printf 'Acquire::Retries "3";\nAcquire::http::Timeout "30";\nAcquire::ForceIPv4 "true";\n' > /etc/apt/apt.conf.d/80network-retries \
     && apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
@@ -11,6 +14,7 @@ RUN pnpm install --frozen-lockfile && pnpm build
 # pnpm 的工作区不支持 prune --prod：重新安装纯运行时依赖。
 RUN find . -type d -name node_modules -prune -exec rm -rf '{}' + && pnpm install --prod --frozen-lockfile
 
+# 最终镜像不需要编译工具链；由 node 用户运行，数据卷权限在降权前建立。
 FROM node:24-bookworm-slim AS runtime
 ENV NODE_ENV=production MYAGENT_CONTAINER=1 MYAGENT_DATA_DIR=/data PORT=3000
 WORKDIR /app

@@ -1,3 +1,4 @@
+# 服务端 profile 预留，不表示已实现公网或多用户部署。
 # server 部署配置预留；当前不加载。
 schemaVersion: 1
 profile: server

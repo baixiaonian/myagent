@@ -7,7 +7,7 @@
 3. [架构概览](architecture/overview.md)：主要执行链、状态归属与不变量；[聊天实现链路图](architecture/chat-flow.md) 对照原设计和源码。
 4. [模块关系](architecture/modules.md)：目录、依赖、扩展边界。
 5. [迭代历史](history/README.md)：最近改动、验证结果、遗留事项。
-6. 开发时读取 [环境与命令](development/setup.md)、[迭代工作流](development/workflow.md)、[提交规范](development/commits.md)、[验证策略](development/testing.md)。
+6. 开发时读取 [环境与命令](development/setup.md)、[迭代工作流](development/workflow.md)、[中文注释规范](development/comments.md)、[提交规范](development/commits.md)、[验证策略](development/testing.md)。
 
 其他入口：[架构决策](adr/README.md)、[协议目录](protocols/README.md)、[技术选型](architecture/technology.md)、[研究依据](architecture/references.md)、[待开发路线](roadmap.md)。
 

@@ -45,7 +45,7 @@ feat(聊天): 实现本地 Web 多轮流式聊天与会话管理
 ## 提交前与推送后
 
 1. 阅读当前规则并运行 `git status --short`，只暂存当前工作涉及的文件。
-2. 同步 STATUS、相关知识页和 history；检查根及相关局部 AGENTS.md。
+2. 同步 STATUS、相关知识页和 history；检查根及相关局部 AGENTS.md，以及文件职责和关键逻辑的中文注释是否符合 [注释规范](comments.md) 并与当前实现一致。
 3. 执行适合变更的验证，通常运行 `pnpm verify`；涉及产品流程时按测试策略补充端到端验证。
 4. 检查 `git diff --cached --stat`、`git diff --cached` 和 `git diff --cached --check`，确保没有密钥、数据库、依赖目录、构建产物或研究上游源码。
 5. 使用中文完成项编写提交消息。多行消息保存为文本文件，通过 `git commit -F` 提交，避免 shell 转义破坏正文。

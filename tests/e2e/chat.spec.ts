@@ -1,3 +1,7 @@
+/**
+ * Web 产品流程验收：用浏览器验证配置、会话、多轮、Markdown、停止、刷新与输入法交互。
+ * 同时覆盖草稿、模糊提交结果和阅读时暂停追尾；只操作专用测试实例与假模型。
+ */
 import { expect, type Page, test } from "@playwright/test";
 
 async function configure(page: Page, model = "test") {
@@ -17,6 +21,7 @@ async function send(page: Page, text: string) {
   await page.getByRole("textbox", { name: "输入消息" }).fill(text);
   await page.getByRole("button", { name: "发送消息" }).click();
 }
+// 同时等待生成按钮消失和最终答案复制入口，避免只凭网络空闲判断流式回答结束。
 async function finished(page: Page) {
   await expect(page.getByRole("button", { name: "停止生成" })).toHaveCount(0);
   await expect(
@@ -26,6 +31,7 @@ async function finished(page: Page) {
       .getByRole("button", { name: "复制消息" }),
   ).toBeVisible();
 }
+// 每例先清理专用实例的配置和会话，首次引导与会话断言不依赖前一例留下的状态。
 test.beforeEach(async ({ request }) => {
   const current = (await (await request.get("/api/v1/settings")).json()) as {
     revision: number;
@@ -113,6 +119,7 @@ test("refresh during generation, draft preservation, IME Enter, stop and failed 
   await configure(page, "slow");
   const input = page.getByRole("textbox", { name: "输入消息" });
   await input.fill("你好");
+  // 人工触发输入法组合事件后按 Enter，验证候选确认不会提交问题；随后再验收正常换行。
   await input.dispatchEvent("compositionstart");
   await input.press("Enter");
   await expect(page.getByRole("article", { name: "你的消息" })).toHaveCount(0);
@@ -181,6 +188,7 @@ test("ambiguous POST response reuses request ID and keeps unsent draft", async (
   await page.route(
     "**/api/v1/sessions/*/runs",
     async (route) => {
+      // 先让请求真实到达服务端并落库，再丢弃浏览器响应，制造“执行成功但客户端不知道”的情形。
       await route.fetch();
       await route.abort("failed");
     },
@@ -206,6 +214,7 @@ test("reading above streamed content suspends auto-scroll and offers return to b
   await send(page, "请展示长文 Markdown");
   await expect(page.locator(".markdown table")).not.toHaveCount(0);
   await page.locator(".conversation").hover();
+  // 通过真实滚轮切换到主动阅读状态，验证新文字到达后不会把页面强拉到底部。
   await page.mouse.wheel(0, -5000);
   await expect(page.getByRole("button", { name: "回到底部" })).toBeVisible();
   await expect(

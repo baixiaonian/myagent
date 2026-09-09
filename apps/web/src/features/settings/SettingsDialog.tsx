@@ -1,3 +1,7 @@
+/**
+ * 模型设置表单：维护尚未保存的地址、模型、系统提示和待替换密钥。
+ * 仅通过 SDK 保存、测试或清除；保存成功后清空密钥输入，不写浏览器持久存储。
+ */
 import type { ChatClient, PublicSettings, SettingsInput } from "@myagent/sdk";
 import {
   CheckCircle2,
@@ -28,6 +32,7 @@ export function SettingsDialog({
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(
     null,
   );
+  // 未编辑密钥就省略 apiKey 字段，表示继续使用已保存值；不能将掩码作为密钥重新提交。
   const input = (): SettingsInput => ({
     baseUrl,
     model,
@@ -35,6 +40,7 @@ export function SettingsDialog({
     expectedRevision: settings.revision,
     ...(key ? { apiKey: key } : {}),
   });
+  // 测试与保存分离：测试当前表单，不代表配置已落盘；保存只影响下一次生成。
   async function action(kind: "save" | "test" | "clear") {
     setBusy(kind);
     setNotice(null);
@@ -43,6 +49,7 @@ export function SettingsDialog({
         await client.testSettings(input());
         setNotice({ ok: true, text: "连接成功，模型已返回文字响应。" });
       } else {
+        // 清除密钥只针对当前已保存配置，不顺便提交表单中未保存的地址或提示词。
         const value =
           kind === "clear"
             ? {
@@ -55,6 +62,7 @@ export function SettingsDialog({
             : input();
         const saved = await client.saveSettings(value);
         onChange(saved);
+        // 保存后清除输入值；再次打开设置也只能读到 hasKey 和掩码。
         setKey("");
         setNotice({
           ok: true,

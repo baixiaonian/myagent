@@ -1,10 +1,12 @@
 # 当前状态
 
-更新时间：2026-09-08。当前里程碑：MyAgent 本地 Web Chat v1（代码 0.1.0）。
+更新时间：2026-09-09。当前里程碑：MyAgent 本地 Web Chat v1（代码 0.1.0）。
 
 ## 已实现
 
 当前代码的请求、落库和回答回传可对照 [聊天实现链路图](architecture/chat-flow.md)，图中关联原架构编号、源码入口和两个开发阶段的提交。
+
+手写代码已补充中文文件职责与关键逻辑注释（54 个源文件，另覆盖 12 个构建 / 配置入口），后续遵循 [中文注释规范](development/comments.md)。本轮只补注释与知识，不改变聊天行为或数据格式。
 
 - 15 个 workspace 保持原模块边界，其中 contracts / sdk / kernel / state / application / adapters / web / server 实现聊天闭环。
 - 本机设置、自有 OpenAI 兼容接口和密钥、实际连接测试、运行时配置快照。
@@ -15,6 +17,8 @@
 - 一次启动开发命令、生产构建 / 统一启动、Dockerfile / Compose / 数据卷 / 健康检查。
 
 ## 验证证据
+
+2026-09-09 注释迭代：`pnpm verify` 通过，32 项测试与构建通过；47 个 TS/JS 文件的语法树及去注释编译输出一致，Python 语法树与其他代码去注释文本一致，SQLite 迁移结构未变，`docker compose config --quiet` 通过。详细范围见 [中文注释补充记录](history/2026-09-09-chinese-code-comments.md)。以下真实模型、浏览器及容器运行结果沿用之前已完成的验收，本轮未重复执行这些产品测试。
 
 `pnpm verify` 通过（格式、架构、文档、类型、32 项测试、生产构建与浏览器产物边界检查）；`pnpm test:e2e` 的 5 组 Chromium 流程通过。生产服务、开发命令及自定义端口代理已启动检查；浏览器检查了首次配置和工作台布局。`docker compose config --quiet` 通过。
 
@@ -34,4 +38,4 @@ Docker 镜像 `myagent:acceptance-v1` 在 Node 24.20.0 / linux/arm64 完成构�
 
 仅可信本机单用户，无公网部署、账号、多租户、图片、附件、联网或 RAG。凭证文件未加密，备份需受限保护；输入草稿仅当前页面内存；事件 / 答案版本一直保存到主动删除会话。读取 [维护说明](development/setup.md) 了解升级、恢复与完整删除。
 
-原始 HTML / diagrams / 上游研究保持原状，未重新发布历史在线报告。Git 远程为私有仓库 [baixiaonian/myagent](https://github.com/baixiaonian/myagent)，origin 使用 SSH，主分支为 main。历史按“工程骨架初始化 → 本地 Web 聊天机器人”两个中文提交组织；首阶段单独通过 8 项工程测试与构建，最终阶段通过 32 项测试与构建。拆分依据与验证见 [提交历史整理](history/2026-09-08-commit-history-split.md)，后续遵循 [提交规范](development/commits.md)。下一轮从 [路线](roadmap.md) 与 [AGENTS](../AGENTS.md) 继续。
+原设计 HTML / 总图 / 上游研究保持原状，未重新发布历史在线报告；当前实现链路图单独维护。Git 远程为私有仓库 [baixiaonian/myagent](https://github.com/baixiaonian/myagent)，origin 使用 SSH，主分支为 main。开发基线的前两个提交为“工程骨架初始化 → 本地 Web 聊天机器人”，分别通过 8 项与 32 项测试及构建；后续图表、注释等迭代独立追加提交。拆分依据与验证见 [提交历史整理](history/2026-09-08-commit-history-split.md)，后续遵循 [提交规范](development/commits.md)。下一轮从 [路线](roadmap.md) 与 [AGENTS](../AGENTS.md) 继续。

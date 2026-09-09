@@ -1,3 +1,7 @@
+/**
+ * 工程架构检查器：比对模块清单、包依赖与源码导入，禁止深路径、跨包相对导入及循环。
+ * 使用 TypeScript AST 识别真实导入；纯内核和 contracts 额外禁止运行时外部依赖。
+ */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { builtinModules } from "node:module";
 import { dirname, relative, resolve } from "node:path";
@@ -14,6 +18,8 @@ const within = (parent, path) => {
   return part === "" || (!part.startsWith("..") && !part.startsWith("/"));
 };
 
+// 遍历 AST 而不是匹配字符串，避免把注释或普通字符串中的 import 当成依赖。
+// 覆盖静态导入、重导出、类型导入，以及参数为字面量的动态 import / require。
 export function sourceImports(source, filename) {
   const file = ts.createSourceFile(
     filename,
@@ -58,6 +64,7 @@ export function sourceImports(source, filename) {
   return imports;
 }
 
+// 生产依赖检查排除 test / spec；根 tests 是刻意允许跨模块装配的测试边界。
 function sourceFiles(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -103,6 +110,7 @@ export function checkArchitecture(root) {
       ...pkg.optionalDependencies,
       ...pkg.peerDependencies,
     };
+    // 开发依赖也参与工程依赖图，但内部生产导入必须在运行时依赖中显式声明。
     const allDependencies = { ...pkg.devDependencies, ...dependencies };
     const internal = Object.keys(allDependencies).filter((name) =>
       name.startsWith("@myagent/"),
@@ -136,6 +144,7 @@ export function checkArchitecture(root) {
           }
           continue;
         }
+        // 清单只登记包名，不登记子路径；因此深路径导入会作为未知入口被拒绝。
         if (specifier.startsWith("@myagent/")) {
           if (!byName.has(specifier)) {
             errors.push(
@@ -166,6 +175,7 @@ export function checkArchitecture(root) {
       }
     }
   }
+  // 用活动递归栈识别环，用完成集合避免重复遍历；即便清单允许两条边，也不能形成循环。
   const done = new Set();
   const active = new Set();
   function visit(name, trail) {
