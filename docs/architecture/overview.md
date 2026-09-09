@@ -2,6 +2,8 @@
 
 MyAgent 采用模块化单体。本地服务器统一托管 Web 和 API，SQLite 与凭证文件在用户数据目录，模型服务由用户配置。浏览器不持有已保存密钥。
 
+一张图查看 [当前聊天链路、原设计与代码提交的对应关系](chat-flow.md)，包含请求、落库、SSE 回传以及源码入口。
+
 ```mermaid
 flowchart LR
   W[Web React 工作台] --> S[SDK HTTP 命令 / SSE 去重]

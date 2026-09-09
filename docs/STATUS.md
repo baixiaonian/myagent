@@ -4,6 +4,8 @@
 
 ## 已实现
 
+当前代码的请求、落库和回答回传可对照 [聊天实现链路图](architecture/chat-flow.md)，图中关联原架构编号、源码入口和两个开发阶段的提交。
+
 - 15 个 workspace 保持原模块边界，其中 contracts / sdk / kernel / state / application / adapters / web / server 实现聊天闭环。
 - 本机设置、自有 OpenAI 兼容接口和密钥、实际连接测试、运行时配置快照。
 - 会话创建 / 切换 / 标题生成 / 重命名 / 删除，多轮流式回答、停止、重试、成功才替换原答的重新生成。

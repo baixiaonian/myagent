@@ -4,7 +4,7 @@
 
 1. [当前状态](STATUS.md)：现在能做什么、哪些还没实现、下一步从哪里开始。
 2. [产品目标](product/goals.md)：为谁解决什么问题，完整产品如何验收。
-3. [架构概览](architecture/overview.md)：主要执行链、状态归属与不变量。
+3. [架构概览](architecture/overview.md)：主要执行链、状态归属与不变量；[聊天实现链路图](architecture/chat-flow.md) 对照原设计和源码。
 4. [模块关系](architecture/modules.md)：目录、依赖、扩展边界。
 5. [迭代历史](history/README.md)：最近改动、验证结果、遗留事项。
 6. 开发时读取 [环境与命令](development/setup.md)、[迭代工作流](development/workflow.md)、[提交规范](development/commits.md)、[验证策略](development/testing.md)。
