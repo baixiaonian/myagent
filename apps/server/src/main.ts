@@ -2,8 +2,10 @@
  * 本地后端进程入口：解析数据目录、监听地址与端口，装配服务器并处理退出信号。
  * 业务路由与资源回收由 bootstrap 管理；启动失败只输出安全提示，不打印底层异常。
  */
+
 import { homedir } from "node:os";
 import { resolve } from "node:path";
+import { type AgentLimits, AppError } from "@myagent/contracts";
 import { buildServer } from "./bootstrap/index.js";
 
 const dataDir = resolve(
@@ -13,9 +15,28 @@ const port = Number(process.env.PORT ?? 3000);
 // 容器内需监听所有接口才能被端口映射访问；宿主 Compose 仍只映射 127.0.0.1。
 const host = process.env.MYAGENT_CONTAINER === "1" ? "0.0.0.0" : "127.0.0.1";
 try {
+  const agentLimits: Partial<AgentLimits> = {};
+  const variables = {
+    modelTimeoutMs: "MYAGENT_MODEL_TIMEOUT_MS",
+    toolTimeoutMs: "MYAGENT_TOOL_TIMEOUT_MS",
+    runTimeoutMs: "MYAGENT_RUN_TIMEOUT_MS",
+    contextCharacters: "MYAGENT_CONTEXT_CHARACTERS",
+    historyTurns: "MYAGENT_HISTORY_TURNS",
+    toolResultCharacters: "MYAGENT_TOOL_RESULT_CHARACTERS",
+    outputCharacters: "MYAGENT_OUTPUT_CHARACTERS",
+  } as const;
+  for (const [key, name] of Object.entries(variables)) {
+    const raw = process.env[name];
+    if (raw === undefined) continue;
+    const value = Number(raw);
+    if (!Number.isSafeInteger(value) || value <= 0 || value > 2147483647)
+      throw new AppError("invalid_limits", "资源配置必须为有效正整数。");
+    agentLimits[key as keyof AgentLimits] = value;
+  }
   const { server } = await buildServer({
     dataDir,
     logger: true,
+    agentLimits,
     ...(process.env.MYAGENT_DEV_ORIGIN
       ? { devOrigin: process.env.MYAGENT_DEV_ORIGIN }
       : {}),

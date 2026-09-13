@@ -32,6 +32,16 @@ export function applyEvent(
   if (snapshot.session.id !== event.sessionId || event.seq <= snapshot.cursor)
     return snapshot;
   const next = { ...snapshot, cursor: event.seq };
+  if (event.type === "step.updated") {
+    const steps = next.steps ?? [];
+    next.steps = steps.some((s) => s.id === event.step.id)
+      ? steps.map((s) => (s.id === event.step.id ? event.step : s))
+      : [...steps, event.step];
+  }
+  if (event.type === "step.delta")
+    next.steps = (next.steps ?? []).map((s) =>
+      s.id === event.stepId ? { ...s, content: s.content + event.delta } : s,
+    );
   if (event.type === "session.updated") next.session = event.session;
   // 最新运行用于显示失败 / 停止状态；activeRun 只保留 running，终态事件会解除输入区忙碌状态。
   if (event.type === "run.updated") {

@@ -36,6 +36,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Modal } from "./components/Modal.js";
 import { CopyButton, Markdown } from "./features/chat/Markdown.js";
+import { RunProcess } from "./features/chat/RunProcess.js";
 import { SettingsDialog } from "./features/settings/SettingsDialog.js";
 
 const client = new ChatClient();
@@ -537,10 +538,23 @@ export default function App() {
                       {message.status === "generating" && (
                         <span className="generating-label">
                           <span />
-                          正在生成
+                          {(snapshot?.steps ?? []).some(
+                            (step) =>
+                              step.runId === message.runId &&
+                              step.status === "tools",
+                          )
+                            ? "正在执行工具"
+                            : "正在生成"}
                         </span>
                       )}
                     </div>
+                    {message.role === "assistant" && (
+                      <RunProcess
+                        steps={(snapshot?.steps ?? []).filter(
+                          (step) => step.runId === message.runId,
+                        )}
+                      />
+                    )}
                     {message.role === "user" ? (
                       <div className="user-text">{message.content}</div>
                     ) : message.content ? (
@@ -577,6 +591,7 @@ export default function App() {
                               type="button"
                               className="copy-button"
                               disabled={busy || submitting}
+                              title="重新生成可能再次调用工具"
                               onClick={() => void send("regenerate")}
                             >
                               <RefreshCw size={14} />

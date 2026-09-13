@@ -3,11 +3,14 @@
  * 具体驱动位于 adapters；这里说明状态所有权及原子性要求，不执行网络或数据库操作。
  */
 import type {
+  ApiProtocol,
   ChatError,
   ChatEvent,
+  JsonValue,
   Message,
   ModelSettings,
   Run,
+  RunStep,
   Session,
   SessionSnapshot,
   Usage,
@@ -23,6 +26,7 @@ export interface CredentialStore {
 }
 // 运行开始的事务输入；expectedRevision 来自用户看到的会话，fingerprint 用于幂等负载校验。
 export interface BeginRun {
+  apiProtocol?: ApiProtocol;
   sessionId: string;
   expectedRevision: number;
   requestId: string;
@@ -31,6 +35,12 @@ export interface BeginRun {
   content: string;
   model: string;
   contextTrimmed: boolean;
+}
+/** 仅供服务端读取；公开快照必须只提取 step，不能展开私有记录。 */
+export interface StoredStep {
+  step: RunStep;
+  identity: string;
+  continuation: JsonValue | null;
 }
 // 终结输入不允许 running；错误和 usage 均可为空，未上报用量不能伪造为零。
 export interface FinishRun {
@@ -54,6 +64,10 @@ export interface ChatStore {
   deleteSession(id: string): void;
   findRequest(sessionId: string, requestId: string): Run | null;
   getRun(id: string): Run;
+  getSteps(runId: string): StoredStep[];
+  saveStep(record: StoredStep): boolean;
+  appendStepDelta(runId: string, stepId: string, delta: string): boolean;
+  markContextTrimmed(runId: string): void;
   // 实现必须原子创建问题、候选回答、Run 及开始事件，同时拒绝并发运行和旧版本命令。
   beginRun(input: BeginRun): Run;
   // 增量内容和事件同事务保存；已经终结或删除的 Run 忽略迟到结果。

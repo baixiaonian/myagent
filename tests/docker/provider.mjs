@@ -1,12 +1,12 @@
 /**
- * 容器内协议替身：通过独立验收网络返回固定文字或持续挂起的流。
- * 仅供 Docker 持久化和 SIGKILL 恢复测试，不使用真实密钥或向宿主发布模型端口。
+ * Docker 验收专用双协议服务：固定文本、工具批次与挂起流，用于验证镜像内的真实执行和恢复。
+ * 只在独立 Compose 网络中服务，不使用用户密钥，不代表真实模型能力。
  */
 import { createServer } from "node:http";
 
-// 只在验收 Compose 私有网络内运行的协议替身，绝不使用真实凭证。
 createServer(async (request, response) => {
-  if (request.url !== "/v1/chat/completions") {
+  const responses = request.url === "/v1/responses";
+  if (!responses && request.url !== "/v1/chat/completions") {
     response.writeHead(404).end();
     return;
   }
@@ -15,17 +15,93 @@ createServer(async (request, response) => {
   const input = JSON.parse(content);
   response.writeHead(200, { "Content-Type": "text/event-stream" });
   response.flushHeaders();
-  const emit = (delta, finishReason = null) =>
-    response.write(
-      `data: ${JSON.stringify({ id: "docker-test", choices: [{ index: 0, delta: { content: delta }, finish_reason: finishReason }] })}\n\n`,
-    );
-  emit("容器持久化测试回答");
-  // 先返回可落盘文字，再持续保活且不结束，给容器 SIGKILL 留出确定的中断窗口。
+  const event = (value) => response.write(`data: ${JSON.stringify(value)}\n\n`);
+  const text = "容器持久化测试回答";
+  const feedback = responses
+    ? input.input.filter((i) => i.type === "function_call_output")
+    : input.messages.filter((m) => m.role === "tool");
+  const calls =
+    input.model === "agent" && !feedback.length
+      ? [
+          {
+            id: "plan",
+            name: "update_plan",
+            arguments: JSON.stringify({
+              steps: [{ description: "查询时间", status: "in_progress" }],
+            }),
+          },
+          { id: "time", name: "get_current_time", arguments: "{}" },
+        ]
+      : [];
+  if (responses) {
+    event({ type: "response.output_text.delta", delta: text });
+    if (input.model !== "hold") {
+      event({
+        type: "response.completed",
+        response: {
+          id: "docker",
+          object: "response",
+          status: "completed",
+          model: input.model,
+          output: [
+            {
+              type: "message",
+              id: "m",
+              role: "assistant",
+              status: "completed",
+              content: [{ type: "output_text", text, annotations: [] }],
+            },
+            ...calls.map((c) => ({
+              type: "function_call",
+              id: c.id,
+              call_id: c.id,
+              name: c.name,
+              arguments: c.arguments,
+              status: "completed",
+            })),
+          ],
+          usage: null,
+        },
+      });
+      response.end();
+    }
+  } else {
+    event({
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: text,
+            ...(calls.length
+              ? {
+                  tool_calls: calls.map((c, index) => ({
+                    index,
+                    id: c.id,
+                    type: "function",
+                    function: { name: c.name, arguments: c.arguments },
+                  })),
+                }
+              : {}),
+          },
+          finish_reason: null,
+        },
+      ],
+    });
+    if (input.model !== "hold") {
+      event({
+        choices: [
+          {
+            index: 0,
+            delta: {},
+            finish_reason: calls.length ? "tool_calls" : "stop",
+          },
+        ],
+      });
+      response.end("data: [DONE]\n\n");
+    }
+  }
   if (input.model === "hold") {
     const timer = setInterval(() => response.write(": heartbeat\n\n"), 1000);
     response.on("close", () => clearInterval(timer));
-  } else {
-    emit("", "stop");
-    response.end("data: [DONE]\n\n");
   }
 }).listen(8080, "0.0.0.0");

@@ -9,8 +9,11 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import staticPlugin from "@fastify/static";
 import {
+  builtinTools,
   FileCredentialStore,
+  LocalToolExecutor,
   OpenAIChatModel,
+  OpenAIResponsesModel,
   SqliteChatStore,
 } from "@myagent/adapters";
 import {
@@ -19,11 +22,13 @@ import {
   SettingsService,
 } from "@myagent/application";
 import {
+  type AgentLimits,
   AppError,
   type RegenerateInput,
   type RunInput,
   type SettingsInput,
 } from "@myagent/contracts";
+import type { ToolExecutor } from "@myagent/kernel";
 import Fastify, { LogController } from "fastify";
 import lockfile from "proper-lockfile";
 import {
@@ -47,6 +52,8 @@ export interface ServerOptions {
   devOrigin?: string;
   modelFactory?: ModelFactory;
   timeoutMs?: number;
+  agentLimits?: Partial<AgentLimits>;
+  toolExecutor?: ToolExecutor;
 }
 // 依次申请数据目录锁、数据库和凭证资源；初始化失败时释放已经拿到的资源。
 // 所有具体适配器在此实例化，上层用例接收契约和工厂而不感知驱动。
@@ -90,15 +97,24 @@ export async function buildServer(options: ServerOptions) {
     await release();
     throw error;
   }
-  // 模型工厂支持测试注入；生产默认创建 OpenAIChatModel，每次运行使用独立配置实例。
+  // 模型工厂支持测试注入；生产按显式协议创建适配器，每次运行使用独立配置实例。
   const settings = new SettingsService(
     store,
     credentials,
     randomUUID,
     options.modelFactory ??
-      ((config, key) => new OpenAIChatModel(config.baseUrl, key, config.model)),
+      ((config, key) =>
+        config.apiProtocol === "responses"
+          ? new OpenAIResponsesModel(config.baseUrl, key, config.model)
+          : new OpenAIChatModel(config.baseUrl, key, config.model)),
   );
-  const chat = new ChatService(store, settings, options.timeoutMs);
+  const chat = new ChatService(
+    store,
+    settings,
+    options.timeoutMs,
+    options.toolExecutor ?? new LocalToolExecutor(builtinTools()),
+    options.agentLimits,
+  );
   // 正式接受请求之前修补上次遗留 Run；不把它们重新加入当前 active Map 或发起模型重试。
   store.recoverInterrupted();
   const streams = new Set<() => void>();

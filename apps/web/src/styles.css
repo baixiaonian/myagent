@@ -1089,3 +1089,82 @@ a {
   background: none;
   padding: 0;
 }
+
+/* Agent 过程与计划：跟随消息布局，不把工具参数或中间文本混入最终答案。 */
+fieldset select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #dce2e7);
+  border-radius: 8px;
+  background: white;
+  color: inherit;
+  font: inherit;
+}
+.run-process {
+  margin: 8px 0 16px;
+  min-width: 0;
+  font-size: 13px;
+}
+.run-plan {
+  padding: 14px 16px;
+  background: #f4f8f7;
+  border: 1px solid #dce7e2;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+.run-plan ul {
+  list-style: none;
+  padding: 0;
+  margin: 9px 0;
+}
+.run-plan li {
+  display: flex;
+  gap: 9px;
+  padding: 4px 0;
+  overflow-wrap: anywhere;
+}
+.run-plan li span {
+  width: 16px;
+  flex-shrink: 0;
+  color: #277763;
+}
+.run-plan li[data-status="completed"] {
+  color: #677970;
+}
+.run-plan small {
+  color: #64756f;
+}
+.execution-details > summary {
+  color: #61716a;
+  cursor: pointer;
+  padding: 7px 0;
+}
+.execution-step {
+  border-left: 2px solid #e0e6e2;
+  padding-left: 12px;
+  margin-top: 8px;
+}
+.tool-call {
+  border: 1px solid #e2e7e4;
+  border-radius: 7px;
+  margin: 7px 0;
+  padding: 9px 12px;
+}
+.tool-call summary {
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.tool-call summary span {
+  margin-left: 12px;
+  color: #587167;
+}
+.tool-call pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 260px;
+  overflow: auto;
+  font-size: 12px;
+  padding: 9px;
+  background: #f5f7f6;
+  border-radius: 5px;
+}

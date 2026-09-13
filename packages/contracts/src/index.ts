@@ -3,6 +3,9 @@
  * 只承载类型与通用限制，不依赖 HTTP、数据库或模型 SDK；字段变化需同步协议与迁移。
  * 密钥只能出现在设置写入命令中，读取结果和事件均不能携带明文。
  */
+import type { ApiProtocol, RunStep } from "./agent.js";
+
+export * from "./agent.js";
 export type RunStatus =
   | "running"
   | "succeeded"
@@ -68,6 +71,8 @@ export interface Run {
   assistantMessageId: string;
   originalAssistantId: string | null;
   model: string;
+  apiProtocol?: ApiProtocol;
+  stepCount?: number;
   contextTrimmed: boolean;
   finishReason: string | null;
   usage: Usage | null;
@@ -76,6 +81,7 @@ export interface Run {
   endedAt: string | null;
 }
 export interface ModelSettings {
+  apiProtocol: ApiProtocol;
   baseUrl: string;
   model: string;
   systemPrompt: string;
@@ -90,6 +96,8 @@ export interface PublicSettings extends ModelSettings {
 }
 // apiKey 缺省表示保留；clearKey 明确表示删除。两者不能同时提交。
 export interface SettingsInput {
+  /** 老客户端省略时保留原协议；旧数据库缺省为 Chat Completions。 */
+  apiProtocol?: ApiProtocol;
   baseUrl: string;
   model: string;
   systemPrompt: string;
@@ -108,6 +116,7 @@ export interface RegenerateInput {
 }
 // cursor 对应这个完整快照已经包含的最后事件；随后只应用更大的事件序号。
 export interface SessionSnapshot {
+  steps?: RunStep[];
   session: Session;
   messages: Message[];
   latestRun: Run | null;
@@ -119,13 +128,15 @@ export interface RunAccepted {
   snapshot: SessionSnapshot;
 }
 export type EventData =
+  | { type: "step.updated"; step: RunStep }
+  | { type: "step.delta"; stepId: string; delta: string }
   | { type: "session.updated"; session: Session }
   | { type: "message.created" | "message.updated"; message: Message }
   | { type: "message.delta"; messageId: string; delta: string }
   | { type: "run.updated"; run: Run };
 // seq 在单会话内单调递增；schemaVersion 是事件格式版本，不是会话 revision。
 export type ChatEvent = EventData & {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   sessionId: string;
   seq: number;
   createdAt: string;

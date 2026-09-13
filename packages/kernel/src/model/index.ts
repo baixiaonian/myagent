@@ -1,17 +1,33 @@
 /**
- * 模型端口契约：把厂商响应统一为文字增量与结束事件。
- * 适配器提供 AsyncIterable 并接受 AbortSignal；内核只依赖这个接口，无需了解厂商协议。
+ * 协议中立模型端口：流式文字与完整响应分开，工具只在完整响应后执行。
+ * continuation 是适配器产生并读取的服务端续接数据，内核不解释其厂商字段。
  */
-import type { Usage } from "@myagent/contracts";
+import type {
+  JsonValue,
+  ToolCall,
+  ToolDefinition,
+  Usage,
+} from "@myagent/contracts";
 import type { ModelMessage } from "../context/index.js";
-// text 可以多次产生；done 表示模型给出了结束原因。usage 缺失为 null，不能补成 0。
+export interface ModelResponse {
+  content: string;
+  toolCalls: ToolCall[];
+  continuation?: JsonValue;
+}
 export type ModelEvent =
   | { type: "text"; text: string }
-  | { type: "done"; finishReason: string; usage: Usage | null };
+  /** 非展示数据也计入资源预算，防止只有推理或工具参数的流无限增长。 */
+  | { type: "output"; characters: number }
+  | {
+      type: "done";
+      finishReason: string;
+      usage: Usage | null;
+      response?: ModelResponse;
+    };
 export interface ModelPort {
-  // 实现方应把信号传到实际网络请求，并在流退出时释放连接；不得在内部静默重发生成。
   stream(
     messages: readonly ModelMessage[],
     signal: AbortSignal,
+    tools?: readonly ToolDefinition[],
   ): AsyncIterable<ModelEvent>;
 }

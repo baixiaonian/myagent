@@ -27,7 +27,8 @@
     "test:e2e": "pnpm build && playwright test",
     "check:release": "node scripts/check-client-build.mjs",
     "test:live": "node scripts/test-live.mjs",
-    "test:docker": "docker build -t myagent:acceptance-v1 . && node scripts/test-docker.mjs"
+    "test:docker": "docker build -t myagent:acceptance-v1 . && node scripts/test-docker.mjs",
+    "test:agent:live": "pnpm build && node scripts/test-agent-live.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.12",

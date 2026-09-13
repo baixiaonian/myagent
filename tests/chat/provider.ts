@@ -6,7 +6,14 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 export interface CapturedRequest {
   model: string;
-  messages: { role: string; content: string }[];
+  messages: {
+    role: string;
+    content: string;
+    tool_call_id?: string;
+    tool_calls?: unknown[];
+    reasoning_content?: string;
+  }[];
+  input?: Record<string, unknown>[];
   stream: boolean;
   [key: string]: unknown;
 }
@@ -15,15 +22,36 @@ export async function mockProvider(port = 0) {
   const requests: CapturedRequest[] = [];
   let cancelled = 0;
   const server = createServer(async (request, response) => {
-    if (request.url !== "/v1/chat/completions") {
+    const responses = request.url === "/v1/responses";
+    if (request.url !== "/v1/chat/completions" && !responses) {
       response.writeHead(404).end();
       return;
     }
     let body = "";
     for await (const part of request) body += String(part);
     const input = JSON.parse(body) as CapturedRequest;
+    if (responses)
+      input.messages = (input.input ?? [])
+        .filter((item) => item.type !== "reasoning")
+        .map((item) => ({
+          role:
+            item.type === "function_call_output"
+              ? "tool"
+              : String(item.role ?? "assistant"),
+          content:
+            typeof item.content === "string"
+              ? item.content
+              : typeof item.output === "string"
+                ? item.output
+                : Array.isArray(item.content)
+                  ? item.content
+                      .map((part) => (part as { text?: string }).text ?? "")
+                      .join("")
+                  : "",
+        }));
     requests.push(input);
-    const question = input.messages.at(-1)?.content ?? "";
+    const question =
+      input.messages.findLast((m) => m.role === "user")?.content ?? "";
     const model = input.model;
     // 通过模型名选择固定失败场景；故意在上游错误中回显假鉴权信息，检验应用是否正确脱敏。
     const status = { unauthorized: 401, missing: 404, limited: 429, bad: 400 }[
@@ -79,14 +107,186 @@ export async function mockProvider(port = 0) {
       response.write(bytes.subarray(0, middle));
       response.write(bytes.subarray(middle));
     };
+    const responseObject = (output: unknown[], status = "completed") => ({
+      id: "resp_mock",
+      object: "response",
+      created_at: 1,
+      model,
+      status,
+      output,
+      usage: null,
+    });
+    const messageItem = (value: string) => ({
+      type: "message",
+      id: "msg_mock",
+      role: "assistant",
+      status: "completed",
+      content: [{ type: "output_text", text: value, annotations: [] }],
+    });
+    if (question.includes("Agent") && input.tools) {
+      // 三次模型请求：先计划和取时间，再修改计划，最后回答；测试控制器不模拟真实推理。
+      const lastUser = input.messages.findLastIndex((m) => m.role === "user");
+      const results = input.messages
+        .slice(lastUser + 1)
+        .filter((m) => m.role === "tool");
+      const calls =
+        results.length === 0
+          ? [
+              {
+                id: "plan1",
+                name: "update_plan",
+                arguments: JSON.stringify({
+                  steps: [
+                    { description: "查询时间", status: "in_progress" },
+                    { description: "给出回答", status: "pending" },
+                  ],
+                }),
+              },
+              {
+                id: "time1",
+                name: "get_current_time",
+                arguments: JSON.stringify({ timezone: "Asia/Shanghai" }),
+              },
+            ]
+          : results.length === 2
+            ? [
+                {
+                  id: "plan2",
+                  name: "update_plan",
+                  arguments: JSON.stringify({
+                    steps: [
+                      { description: "查询时间", status: "completed" },
+                      { description: "给出回答", status: "completed" },
+                    ],
+                    explanation: "已获得真实工具结果",
+                  }),
+                },
+              ]
+            : [];
+      const text = calls.length
+        ? "正在处理任务。"
+        : "Agent 任务已完成，已查询时间并更新计划。";
+      schedule(
+        () => {
+          if (responses) {
+            event({ type: "response.output_text.delta", delta: text });
+            for (const call of calls)
+              for (const delta of [
+                call.arguments.slice(0, 3),
+                call.arguments.slice(3),
+              ])
+                event({
+                  type: "response.function_call_arguments.delta",
+                  delta,
+                  item_id: `item_${call.id}`,
+                  output_index: 1,
+                });
+            const output = [
+              {
+                type: "reasoning",
+                id: `reason_${results.length}`,
+                content: [
+                  { type: "reasoning_text", text: "private-reasoning-fixture" },
+                ],
+                summary: [],
+              },
+              messageItem(text),
+              ...calls.map((call) => ({
+                type: "function_call",
+                id: `item_${call.id}`,
+                call_id: call.id,
+                name: call.name,
+                arguments: call.arguments,
+                status: "completed",
+              })),
+            ];
+            event({
+              type: "response.completed",
+              response: responseObject(output),
+            });
+            response.end();
+          } else {
+            event({
+              choices: [
+                {
+                  index: 0,
+                  delta: {
+                    content: text,
+                    reasoning_content: "private-reasoning-fixture",
+                  },
+                  finish_reason: null,
+                },
+              ],
+            });
+            calls.forEach((call, index) => {
+              event({
+                choices: [
+                  {
+                    index: 0,
+                    delta: {
+                      tool_calls: [
+                        {
+                          index,
+                          id: call.id,
+                          type: "function",
+                          function: {
+                            name: call.name,
+                            arguments: call.arguments.slice(0, 3),
+                          },
+                        },
+                      ],
+                    },
+                    finish_reason: null,
+                  },
+                ],
+              });
+              event({
+                choices: [
+                  {
+                    index: 0,
+                    delta: {
+                      tool_calls: [
+                        {
+                          index,
+                          function: { arguments: call.arguments.slice(3) },
+                        },
+                      ],
+                    },
+                    finish_reason: null,
+                  },
+                ],
+              });
+            });
+            event({
+              choices: [
+                {
+                  index: 0,
+                  delta: {},
+                  finish_reason: calls.length ? "tool_calls" : "stop",
+                },
+              ],
+            });
+            response.end(responses ? undefined : "data: [DONE]\n\n");
+          }
+        },
+        slow ? 500 : 10,
+      );
+      return;
+    }
     chunks.forEach((content, index) => {
       schedule(
         () => {
-          event({
-            id: "mock",
-            object: "chat.completion.chunk",
-            choices: [{ index: 0, delta: { content }, finish_reason: null }],
-          });
+          event(
+            responses
+              ? { type: "response.output_text.delta", delta: content }
+              : {
+                  id: "mock",
+                  object: "chat.completion.chunk",
+                  choices: [
+                    { index: 0, delta: { content }, finish_reason: null },
+                  ],
+                },
+          );
           // 只发一个文字块便结束 HTTP，故意缺失 finish_reason，让适配器必须报告不完整流。
           if (model === "broken" && index === 0) response.end();
         },
@@ -95,12 +295,19 @@ export async function mockProvider(port = 0) {
     });
     schedule(
       () => {
-        event({
-          id: "mock",
-          object: "chat.completion.chunk",
-          choices: [{ index: 0, delta: {}, finish_reason: "stop" }],
-        });
-        response.end("data: [DONE]\n\n");
+        event(
+          responses
+            ? {
+                type: "response.completed",
+                response: responseObject([messageItem(text)]),
+              }
+            : {
+                id: "mock",
+                object: "chat.completion.chunk",
+                choices: [{ index: 0, delta: {}, finish_reason: "stop" }],
+              },
+        );
+        response.end(responses ? undefined : "data: [DONE]\n\n");
       },
       20 + chunks.length * delay,
     );

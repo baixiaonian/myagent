@@ -14,6 +14,7 @@ export const settingsSchema = {
   additionalProperties: false,
   required: ["baseUrl", "model", "systemPrompt", "expectedRevision"],
   properties: {
+    apiProtocol: { type: "string", enum: ["responses", "chat_completions"] },
     baseUrl: text(2000),
     model: text(200),
     systemPrompt: text(4000, 0),

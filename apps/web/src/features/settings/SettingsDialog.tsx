@@ -2,7 +2,12 @@
  * 模型设置表单：维护尚未保存的地址、模型、系统提示和待替换密钥。
  * 仅通过 SDK 保存、测试或清除；保存成功后清空密钥输入，不写浏览器持久存储。
  */
-import type { ChatClient, PublicSettings, SettingsInput } from "@myagent/sdk";
+import type {
+  ApiProtocol,
+  ChatClient,
+  PublicSettings,
+  SettingsInput,
+} from "@myagent/sdk";
 import {
   CheckCircle2,
   KeyRound,
@@ -24,6 +29,9 @@ export function SettingsDialog({
   onChange: (settings: PublicSettings) => void;
   onClose: () => void;
 }) {
+  const [apiProtocol, setApiProtocol] = useState<ApiProtocol>(
+    settings.model ? settings.apiProtocol : "responses",
+  );
   const [baseUrl, setBaseUrl] = useState(settings.baseUrl);
   const [model, setModel] = useState(settings.model);
   const [key, setKey] = useState("");
@@ -34,6 +42,7 @@ export function SettingsDialog({
   );
   // 未编辑密钥就省略 apiKey 字段，表示继续使用已保存值；不能将掩码作为密钥重新提交。
   const input = (): SettingsInput => ({
+    apiProtocol,
     baseUrl,
     model,
     systemPrompt: prompt,
@@ -47,12 +56,16 @@ export function SettingsDialog({
     try {
       if (kind === "test") {
         await client.testSettings(input());
-        setNotice({ ok: true, text: "连接成功，模型已返回文字响应。" });
+        setNotice({
+          ok: true,
+          text: `${apiProtocol === "responses" ? "Responses" : "Chat Completions"} 连接成功，模型已返回文字响应。`,
+        });
       } else {
         // 清除密钥只针对当前已保存配置，不顺便提交表单中未保存的地址或提示词。
         const value =
           kind === "clear"
             ? {
+                apiProtocol: settings.apiProtocol,
                 baseUrl: settings.baseUrl,
                 model: settings.model,
                 systemPrompt: settings.systemPrompt,
@@ -75,7 +88,7 @@ export function SettingsDialog({
     } catch (error) {
       setNotice({
         ok: false,
-        text: error instanceof Error ? error.message : "操作失败，请重试。",
+        text: `${apiProtocol === "responses" ? "Responses" : "Chat Completions"}：${error instanceof Error ? error.message : "操作失败，请重试。"}`,
       });
     } finally {
       setBusy("");
@@ -103,6 +116,21 @@ export function SettingsDialog({
       >
         <fieldset disabled={Boolean(busy)}>
           <label>
+            模型协议
+            <select
+              value={apiProtocol}
+              onChange={(event) =>
+                setApiProtocol(event.target.value as ApiProtocol)
+              }
+            >
+              <option value="responses">Responses</option>
+              <option value="chat_completions">Chat Completions</option>
+            </select>
+          </label>
+          <p className="field-hint">
+            选择服务商支持的协议；不会在失败后自动切换。运行中修改仅在下次生效。
+          </p>
+          <label>
             接口基础地址
             <input
               value={baseUrl}
@@ -115,7 +143,8 @@ export function SettingsDialog({
             />
           </label>
           <p className="field-hint">
-            填写 OpenAI 兼容接口的基础地址，不包含 /chat/completions。
+            填写 OpenAI 兼容接口的基础地址，不包含 /responses 或
+            /chat/completions。
           </p>
           <label>
             模型 ID

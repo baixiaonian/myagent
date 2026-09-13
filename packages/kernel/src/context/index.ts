@@ -1,17 +1,95 @@
 /**
- * 纯上下文构建器：将持久历史、当前问题和系统提示组合成模型消息。
- * 仅选最近完整成功问答，按整轮和字符预算裁剪；不查询数据库、不检索、不自动摘要。
+ * 纯上下文构建：完整历史由应用提供，本模块只选择每次模型调用实际携带的信息。
+ * 当前运行不可拆散；历史按整次用户交互取舍，保证调用和结果及续接材料一起保留。
  */
-import { AppError, LIMITS, type Message } from "@myagent/contracts";
+import {
+  AGENT_LIMITS,
+  type AgentLimits,
+  AppError,
+  type JsonValue,
+  LIMITS,
+  type Message,
+  type ToolCall,
+  type ToolDefinition,
+} from "@myagent/contracts";
 export interface ModelMessage {
-  role: "system" | "user" | "assistant";
+  role: "system" | "user" | "assistant" | "tool";
   content: string;
+  toolCalls?: ToolCall[];
+  callId?: string;
+  continuation?: JsonValue;
 }
 export interface ContextSnapshot {
   messages: ModelMessage[];
   trimmed: boolean;
 }
-/** 只保留完整的成功问答对；字符预算不冒充模型 token 预算。 */
+export interface ContextInput {
+  instructions: string;
+  history: readonly (readonly ModelMessage[])[];
+  current: readonly ModelMessage[];
+  tools: readonly ToolDefinition[];
+  limits: AgentLimits;
+}
+export interface ContextBuilder {
+  build(input: ContextInput): ContextSnapshot;
+}
+// 用实际字符串长度加序列化附加字段估算容量；这不是 tokenizer。
+function size(message: ModelMessage): number {
+  const { content, role: _, ...extra } = message;
+  return (
+    content.length +
+    (Object.keys(extra).length ? JSON.stringify(extra).length : 0)
+  );
+}
+export const defaultContextBuilder: ContextBuilder = {
+  build({ instructions, history, current, tools, limits }) {
+    const prefix: ModelMessage[] = instructions
+      ? [{ role: "system", content: instructions }]
+      : [];
+    let remaining =
+      limits.contextCharacters -
+      [...prefix, ...current].reduce((sum, m) => sum + size(m), 0) -
+      (tools.length ? JSON.stringify(tools).length : 0);
+    if (remaining < 0)
+      throw new AppError(
+        "context_limit",
+        "本次执行所需上下文超过容量，请缩短任务或提高上下文容量。",
+        422,
+      );
+    const selected: ModelMessage[][] = [];
+    for (const round of history.toReversed()) {
+      const length = round.reduce((sum, m) => sum + size(m), 0);
+      if (selected.length >= limits.historyTurns || length > remaining) break;
+      selected.unshift([...round]);
+      remaining -= length;
+    }
+    return {
+      messages: [...prefix, ...selected.flat(), ...current],
+      trimmed: selected.length < history.length,
+    };
+  },
+};
+/** 老聊天历史转完整问答；只选择最终有效成功版本，候选失败不会污染后续模型。 */
+export function chatHistory(history: readonly Message[]): ModelMessage[][] {
+  return history
+    .filter((m) => m.role === "user")
+    .flatMap((question) => {
+      const answer = history.findLast(
+        (m) =>
+          m.replyToId === question.id &&
+          m.role === "assistant" &&
+          m.status === "completed",
+      );
+      return answer
+        ? [
+            [
+              { role: "user" as const, content: question.content },
+              { role: "assistant" as const, content: answer.content },
+            ],
+          ]
+        : [];
+    });
+}
 export function buildContext(
   history: readonly Message[],
   question: string,
@@ -19,43 +97,11 @@ export function buildContext(
 ): ContextSnapshot {
   if (!question.trim() || question.length > LIMITS.inputCharacters)
     throw new AppError("invalid_input", "请输入 1–8000 字符的问题。");
-  // 按用户问题寻找最后一条 completed 回答，排除失败、停止和已被替换的候选版本。
-  const pairs: ModelMessage[][] = [];
-  for (const message of history) {
-    if (message.role !== "user") continue;
-    const answer = history.findLast(
-      (item) =>
-        item.replyToId === message.id &&
-        item.role === "assistant" &&
-        item.status === "completed",
-    );
-    if (answer)
-      pairs.push([
-        { role: "user", content: message.content },
-        { role: "assistant", content: answer.content },
-      ]);
-  }
-  // 系统提示和当前问题先占预算，再容纳历史；单位为字符，不将它伪称为精确 token。
-  let remaining =
-    LIMITS.contextCharacters - question.length - systemPrompt.length;
-  const selected: ModelMessage[][] = [];
-  // 从最近轮次向前选取，遇到预算不足即停止，保留连续的最近上下文。
-  // 用 unshift 恢复时间顺序，整轮取舍避免留下没有答案的问题或没有问题的答案。
-  for (const pair of pairs.toReversed()) {
-    const size = pair.reduce((sum, item) => sum + item.content.length, 0);
-    if (selected.length >= LIMITS.contextTurns || size > remaining) break;
-    selected.unshift(pair);
-    remaining -= size;
-  }
-  return {
-    messages: [
-      ...(systemPrompt
-        ? [{ role: "system" as const, content: systemPrompt }]
-        : []),
-      ...selected.flat(),
-      { role: "user", content: question },
-    ],
-    // 只报告完整成功历史是否被预算裁剪；本来就不完整的历史不算预算截断。
-    trimmed: selected.length < pairs.length,
-  };
+  return defaultContextBuilder.build({
+    instructions: systemPrompt,
+    history: chatHistory(history),
+    current: [{ role: "user", content: question }],
+    tools: [],
+    limits: { ...AGENT_LIMITS },
+  });
 }

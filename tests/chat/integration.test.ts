@@ -85,6 +85,7 @@ describe("durable chat over real compatible HTTP", () => {
       "messages",
       "model",
       "stream",
+      "tools",
     ]);
     expect(app.store.getRun(two.run.id).usage).toBeNull();
     // 同一事件应用两次后仍应与数据库快照一致，验证幂等投影而不仅是事件条数。

@@ -4,4 +4,6 @@
  */
 export * from "./credentials/index.js";
 export * from "./models/openai/index.js";
+export * from "./models/openai/responses.js";
 export * from "./storage/sqlite/store.js";
+export * from "./tools/index.js";

@@ -1,81 +1,153 @@
 /**
- * OpenAI 兼容模型适配器：把 Chat Completions 流转换为通用 ModelEvent。
- * 负责厂商参数、流结束判定和安全错误映射；关闭 SDK 自动重试与日志，避免重复费用和凭证泄露。
+ * Chat Completions 适配器：聚合工具参数和文字分片，完整结束后才向内核交付工具调用。
+ * 对话和工具结果由 MyAgent 管理；reasoning_content 仅作为私有续接材料保存与回传。
  */
-import { AppError, type Usage } from "@myagent/contracts";
+import {
+  AppError,
+  type JsonValue,
+  type ToolCall,
+  type ToolDefinition,
+  type Usage,
+} from "@myagent/contracts";
 import type { ModelEvent, ModelMessage, ModelPort } from "@myagent/kernel";
-import OpenAI from "openai";
-// 只根据异常类型和状态码生成白名单提示；不回显厂商 message、响应体或鉴权请求头。
-export function modelError(error: unknown): AppError {
-  if (error instanceof AppError) return error;
-  if (error instanceof OpenAI.APIConnectionTimeoutError)
-    return new AppError("timeout", "模型响应超时，请稍后重试。", 504);
-  if (error instanceof OpenAI.APIError) {
-    if (error.status === 401 || error.status === 403)
-      return new AppError(
-        "model_auth",
-        "模型密钥无效或没有访问权限，请检查设置。",
-        502,
-      );
-    if (error.status === 404)
-      return new AppError(
-        "model_not_found",
-        "模型或接口不存在，请检查接口地址和模型名称。",
-        502,
-      );
-    if (error.status === 429)
-      return new AppError(
-        "model_rate_limit",
-        "模型服务当前限流或额度不足，请稍后重试。",
-        502,
-      );
-    if (error.status && error.status >= 400 && error.status < 500)
-      return new AppError(
-        "model_request",
-        "模型服务不接受当前请求，请检查模型配置或缩短对话。",
-        502,
-      );
-  }
-  return new AppError(
-    "model_connection",
-    "无法连接模型服务或流式响应中断，请检查接口和网络。",
-    502,
-  );
-}
+import type OpenAI from "openai";
+import { client, modelError } from "./shared.js";
+
+export { modelError } from "./shared.js";
 export class OpenAIChatModel implements ModelPort {
   private readonly client: OpenAI;
+  private readonly deepseek: boolean;
   constructor(
     baseUrl: string,
     apiKey: string,
     private readonly model: string,
   ) {
-    // 关闭厂商 SDK 默认重试，确保一次 Run 不因网络问题自动产生第二次计费请求。
-    this.client = new OpenAI({
-      baseURL: baseUrl,
-      apiKey,
-      maxRetries: 0,
-      logLevel: "off",
-      timeout: 120000,
-    });
+    this.client = client(baseUrl, apiKey);
+    this.deepseek = new URL(baseUrl).hostname === "api.deepseek.com";
   }
-  // 请求只发送 model、messages 和 stream，减少不同兼容服务对扩展参数支持差异的影响。
   async *stream(
     messages: readonly ModelMessage[],
     signal: AbortSignal,
+    tools: readonly ToolDefinition[] = [],
   ): AsyncIterable<ModelEvent> {
     try {
+      const input = messages.map((message) => {
+        if (message.role === "tool")
+          return {
+            role: "tool",
+            tool_call_id: message.callId,
+            content: message.content,
+          };
+        const value: Record<string, unknown> = {
+          role: message.role,
+          content: message.content,
+        };
+        if (message.toolCalls?.length)
+          value.tool_calls = message.toolCalls.map((call) => ({
+            id: call.id,
+            type: "function",
+            function: { name: call.name, arguments: call.arguments },
+          }));
+        if (message.role === "assistant") {
+          const saved = message.continuation as
+            | { protocol?: string; reasoningContent?: string }
+            | undefined;
+          if (
+            saved?.protocol === "chat_completions" &&
+            saved.reasoningContent !== undefined
+          )
+            value.reasoning_content = saved.reasoningContent;
+          // 旧文字历史没有推理内容，空串只表示缺失，不能杜撰旧模型的推理。
+          else if (this.deepseek && tools.length) value.reasoning_content = "";
+        }
+        return value;
+      }) as unknown as OpenAI.Chat.Completions.ChatCompletionMessageParam[];
       const stream = await this.client.chat.completions.create(
-        { model: this.model, messages: [...messages], stream: true },
+        {
+          model: this.model,
+          messages: input,
+          stream: true,
+          ...(tools.length
+            ? {
+                tools: tools.map((t) => ({
+                  type: "function" as const,
+                  function: {
+                    name: t.name,
+                    description: t.description,
+                    parameters: t.parameters,
+                    strict: false,
+                  },
+                })),
+              }
+            : {}),
+        },
         { signal },
       );
       let finishReason: string | null = null;
+      let content = "";
+      let reasoningContent = "";
+      let hasReasoning = false;
       let usage: Usage | null = null;
+      const calls = new Map<number, ToolCall>();
       try {
         for await (const chunk of stream) {
-          // 按单答案消费 choices[0]；无 choices 的用量块仍可更新 usage，空 delta 不产生文字事件。
           const choice = chunk.choices[0];
-          if (choice?.delta.content)
+          // 结束后只允许独立 usage 帧；禁止把结束后补来的参数拼成可执行调用。
+          if (finishReason && choice)
+            throw new AppError(
+              "model_protocol",
+              "模型在结束后继续发送响应。",
+              502,
+            );
+          if (choice?.delta.content) {
+            content += choice.delta.content;
             yield { type: "text", text: choice.delta.content };
+          }
+          const reasoning = (
+            choice?.delta as { reasoning_content?: string } | undefined
+          )?.reasoning_content;
+          if (typeof reasoning === "string") {
+            hasReasoning = true;
+            reasoningContent += reasoning;
+            yield { type: "output", characters: reasoning.length };
+          }
+          for (const delta of choice?.delta.tool_calls ?? []) {
+            if (!Number.isSafeInteger(delta.index) || delta.index < 0)
+              throw new AppError(
+                "model_protocol",
+                "模型工具分片缺少有效序号。",
+                502,
+              );
+            if (delta.type && delta.type !== "function")
+              throw new AppError(
+                "model_protocol",
+                "模型返回了不支持的工具类型。",
+                502,
+              );
+            const call = calls.get(delta.index) ?? {
+              id: "",
+              name: "",
+              arguments: "",
+            };
+            if (delta.id) {
+              if (call.id && call.id !== delta.id)
+                throw new AppError(
+                  "model_protocol",
+                  "模型工具标识发生变化。",
+                  502,
+                );
+              call.id = delta.id;
+            }
+            if (delta.function?.name) call.name += delta.function.name;
+            if (delta.function?.arguments) {
+              call.arguments += delta.function.arguments;
+              yield {
+                type: "output",
+                characters: delta.function.arguments.length,
+              };
+            }
+            calls.set(delta.index, call);
+          }
           if (choice?.finish_reason) finishReason = choice.finish_reason;
           if (chunk.usage)
             usage = {
@@ -85,26 +157,30 @@ export class OpenAIChatModel implements ModelPort {
             };
         }
       } finally {
-        // 即使消费者提前停止或流读取失败，也关闭 SDK 持有的网络流。
         stream.controller.abort();
       }
-      // 只有传输 EOF 或 [DONE] 不足以确认完整模型回答，必须收到实际 finish_reason。
       if (!finishReason)
         throw new AppError(
           "incomplete_stream",
           "模型连接中断，回答未完整结束。",
           502,
         );
-      // 当前产品没有工具执行器；将工具请求明确判为不支持，不能把它当文字成功交付。
-      if (finishReason === "tool_calls" || finishReason === "function_call")
-        throw new AppError(
-          "unsupported_response",
-          "该模型返回了工具调用；当前仅支持文字聊天。",
-          502,
-        );
-      yield { type: "done", finishReason, usage };
+      const continuation: JsonValue | undefined = hasReasoning
+        ? { protocol: "chat_completions", reasoningContent }
+        : undefined;
+      yield {
+        type: "done",
+        finishReason,
+        usage,
+        response: {
+          content,
+          toolCalls: [...calls.entries()]
+            .sort(([a], [b]) => a - b)
+            .map(([, call]) => call),
+          ...(continuation !== undefined ? { continuation } : {}),
+        },
+      };
     } catch (error) {
-      // 保留内核给出的 cancelled / timeout 原因，避免把主动中止误映射成连接故障。
       if (signal.aborted) throw signal.reason;
       throw modelError(error);
     }

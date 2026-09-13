@@ -112,8 +112,41 @@ try {
     networks: ["default"],
   };
   writeFileSync(file, JSON.stringify(config));
+  // 在本脚本拥有的新卷里预置真实 v1 数据库，验证镜像启动自动迁移；不触碰用户卷。
+  const seedVolume = config.volumes["myagent-data"].name;
+  docker(
+    "volume",
+    "create",
+    "--label",
+    `com.docker.compose.project=${project}`,
+    "--label",
+    "com.docker.compose.volume=myagent-data",
+    seedVolume,
+  );
+  docker(
+    "run",
+    "--rm",
+    "--user",
+    "root",
+    "--entrypoint",
+    "node",
+    "-v",
+    `${seedVolume}:/data`,
+    image,
+    "-e",
+    "const fs=require('fs');const {createRequire}=require('module');const req=createRequire('/app/packages/adapters/package.json');const DB=req('better-sqlite3');const db=new DB('/data/state.db');db.exec(fs.readFileSync('/app/migrations/0001_chat.sql','utf8'));db.pragma('user_version=1');db.close();fs.chownSync('/data',1000,1000);fs.chownSync('/data/state.db',1000,1000);fs.chmodSync('/data',448);fs.chmodSync('/data/state.db',384);",
+  );
   compose("up", "-d", "--no-build");
   await ready();
+  const migrated = docker(
+    "exec",
+    container,
+    "node",
+    "-e",
+    "const {createRequire}=require('module');const r=createRequire('/app/packages/adapters/package.json');const D=r('better-sqlite3');const db=new D('/data/state.db',{readonly:true});console.log(db.pragma('user_version',{simple:true}));db.close();",
+  ).trim();
+  assert.equal(migrated, "2");
+  passed("真实 v1 数据卷随容器启动升级为 v2");
   const inspect = JSON.parse(docker("inspect", container))[0];
   assert.equal(inspect.Config.User, "node");
   assert(inspect.HostConfig.CapDrop.includes("ALL"));
@@ -210,6 +243,34 @@ try {
   assert.deepEqual(await api(`/sessions/${session.id}`), complete);
   assert.equal((await api("/settings")).hasKey, true);
   passed("停止后完整卷备份，恢复到新卷，历史与凭证引用一致");
+  for (const apiProtocol of ["chat_completions", "responses"]) {
+    saved = await api("/settings", "PUT", {
+      apiProtocol,
+      baseUrl: "http://provider:8080/v1",
+      model: "agent",
+      systemPrompt: "",
+      expectedRevision: saved.revision,
+    });
+    const agentSession = await api("/sessions", "POST", {});
+    await api(`/sessions/${agentSession.id}/runs`, "POST", {
+      requestId: crypto.randomUUID(),
+      expectedRevision: 0,
+      content: "Agent 容器闭环",
+    });
+    const agentResult = await until(async () => {
+      const s = await api(`/sessions/${agentSession.id}`);
+      return s.latestRun?.status !== "running" ? s : null;
+    });
+    assert.equal(agentResult.latestRun.status, "succeeded");
+    assert.equal(agentResult.steps.length, 2);
+    assert(agentResult.steps[0].tools.every((t) => t.status === "succeeded"));
+    assert.equal(agentResult.steps[0].tools[1].result.data.timezone, "UTC");
+    compose("restart", "myagent");
+    await ready();
+    assert.deepEqual(await api(`/sessions/${agentSession.id}`), agentResult);
+    await api(`/sessions/${agentSession.id}`, "DELETE");
+    passed(`${apiProtocol} 容器工具、计划、步骤持久化和重启恢复`);
+  }
   saved = await api("/settings", "PUT", {
     baseUrl: "http://provider:8080/v1",
     model: "hold",
@@ -235,6 +296,7 @@ try {
   assert.equal(interrupted.latestRun.status, "interrupted");
   assert.equal(interrupted.messages.at(-1).content, "容器持久化测试回答");
   assert.equal(interrupted.activeRun, null);
+  assert.equal(interrupted.steps.at(-1).status, "interrupted");
   passed("真实进程 SIGKILL 后恢复 interrupted，保留落盘文字且不自动重试");
   await api(`/sessions/${session.id}`, "DELETE");
   assert.equal((await api("/sessions")).sessions.length, 0);

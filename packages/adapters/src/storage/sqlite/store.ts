@@ -20,6 +20,7 @@ import type {
   ChatStore,
   FinishRun,
   StoredSettings,
+  StoredStep,
 } from "@myagent/state";
 import Database from "better-sqlite3";
 import { and, desc, eq, gt, sql } from "drizzle-orm";
@@ -40,7 +41,7 @@ export class SqliteChatStore implements ChatStore {
     this.raw.pragma("busy_timeout = 5000");
     const version = this.raw.pragma("user_version", { simple: true }) as number;
     // 拒绝用旧代码打开未来版本数据库，防止静默按旧结构读写。
-    if (version > 1) {
+    if (version > 2) {
       this.raw.close();
       throw new AppError(
         "schema_version",
@@ -59,6 +60,19 @@ export class SqliteChatStore implements ChatStore {
         );
         this.raw.pragma("user_version = 1");
       })();
+    if (version < 2)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0002_agent.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 2");
+      })();
     this.db = drizzle(this.raw);
     if (!this.db.select().from(tables.settings).get())
       this.db
@@ -66,6 +80,7 @@ export class SqliteChatStore implements ChatStore {
         .values({
           id: 1,
           data: {
+            apiProtocol: "chat_completions",
             baseUrl: "https://api.openai.com/v1",
             model: "",
             systemPrompt: "",
@@ -101,7 +116,7 @@ export class SqliteChatStore implements ChatStore {
     if (!row) return;
     const data: ChatEvent = {
       ...event,
-      schemaVersion: 1,
+      schemaVersion: 2,
       sessionId: id,
       seq: row.seq,
       createdAt: new Date().toISOString(),
@@ -129,7 +144,10 @@ export class SqliteChatStore implements ChatStore {
   settings(): StoredSettings {
     const row = this.db.select().from(tables.settings).get();
     if (!row) throw new Error("Missing settings");
-    return row.data;
+    return {
+      ...row.data,
+      apiProtocol: row.data.apiProtocol ?? "chat_completions",
+    };
   }
   // 设置也采用乐观版本检查，避免两个页面用旧 revision 相互覆盖连接配置。
   saveSettings(
@@ -200,6 +218,13 @@ export class SqliteChatStore implements ChatStore {
       return {
         session: this.publicSession(row),
         messages,
+        steps: this.db
+          .select()
+          .from(tables.runSteps)
+          .where(eq(tables.runSteps.sessionId, id))
+          .orderBy(sql`rowid`)
+          .all()
+          .map((item) => item.data.step),
         latestRun: records[0]?.data ?? null,
         activeRun:
           records.find((item) => item.status === "running")?.data ?? null,
@@ -302,6 +327,8 @@ export class SqliteChatStore implements ChatStore {
         assistantMessageId: assistant.id,
         originalAssistantId: original?.id ?? null,
         model: input.model,
+        apiProtocol: input.apiProtocol ?? "chat_completions",
+        stepCount: 0,
         contextTrimmed: input.contextTrimmed,
         finishReason: null,
         usage: null,
@@ -371,6 +398,110 @@ export class SqliteChatStore implements ChatStore {
       });
     })();
   }
+  /** 读取私有记录只供 Application；历史呈现使用 snapshot 中的白名单 step。 */
+  getSteps(runId: string): StoredStep[] {
+    return this.db
+      .select()
+      .from(tables.runSteps)
+      .where(eq(tables.runSteps.runId, runId))
+      .orderBy(tables.runSteps.stepIndex)
+      .all()
+      .map((row) => row.data);
+  }
+  saveStep(record: StoredStep): boolean {
+    return this.raw.transaction(() => {
+      const run = this.db
+        .select()
+        .from(tables.runs)
+        .where(eq(tables.runs.id, record.step.runId))
+        .get()?.data;
+      if (run?.status !== "running") return false;
+      const step = record.step;
+      this.db
+        .insert(tables.runSteps)
+        .values({
+          id: step.id,
+          runId: run.id,
+          sessionId: run.sessionId,
+          stepIndex: step.index,
+          data: record,
+        })
+        .onConflictDoUpdate({
+          target: tables.runSteps.id,
+          set: { data: record },
+        })
+        .run();
+      if ((run.stepCount ?? 0) < step.index) {
+        run.stepCount = step.index;
+        this.db
+          .update(tables.runs)
+          .set({ data: run })
+          .where(eq(tables.runs.id, run.id))
+          .run();
+        this.emit(run.sessionId, { type: "run.updated", run });
+      }
+      this.emit(run.sessionId, { type: "step.updated", step });
+      // 生成中的当前文字先作为候选预览；发现工具调用后移入执行过程，最终答案不混入中间说明。
+      const content = step.tools.length ? "" : step.content;
+      const message = this.db
+        .update(tables.messages)
+        .set({ content })
+        .where(eq(tables.messages.id, run.assistantMessageId))
+        .returning()
+        .get();
+      if (message)
+        this.emit(run.sessionId, { type: "message.updated", message });
+      return true;
+    })();
+  }
+  appendStepDelta(runId: string, stepId: string, delta: string): boolean {
+    return this.raw.transaction(() => {
+      const run = this.db
+        .select()
+        .from(tables.runs)
+        .where(eq(tables.runs.id, runId))
+        .get()?.data;
+      const row = this.db
+        .select()
+        .from(tables.runSteps)
+        .where(eq(tables.runSteps.id, stepId))
+        .get();
+      if (
+        run?.status !== "running" ||
+        !row ||
+        row.runId !== runId ||
+        row.data.step.status !== "model"
+      )
+        return false;
+      const data = row.data;
+      data.step.content += delta;
+      this.db
+        .update(tables.runSteps)
+        .set({ data })
+        .where(eq(tables.runSteps.id, stepId))
+        .run();
+      this.emit(run.sessionId, { type: "step.delta", stepId, delta });
+      this.appendDelta(runId, delta);
+      return true;
+    })();
+  }
+  markContextTrimmed(runId: string): void {
+    this.raw.transaction(() => {
+      const run = this.db
+        .select()
+        .from(tables.runs)
+        .where(eq(tables.runs.id, runId))
+        .get()?.data;
+      if (run?.status !== "running" || run.contextTrimmed) return;
+      run.contextTrimmed = true;
+      this.db
+        .update(tables.runs)
+        .set({ data: run })
+        .where(eq(tables.runs.id, runId))
+        .run();
+      this.emit(run.sessionId, { type: "run.updated", run });
+    })();
+  }
   // 终态只能从 running 进入一次；重复终结或迟到成功不得覆盖已有终态。
   finishRun(runId: string, outcome: FinishRun): void {
     this.raw.transaction(() => {
@@ -380,6 +511,28 @@ export class SqliteChatStore implements ChatStore {
         .where(eq(tables.runs.id, runId))
         .get()?.data;
       if (old?.status !== "running") return;
+      // 进程退出可能没有来得及写 Step 终态；与 Run 在同一事务内修补，不回放动作。
+      for (const record of this.getSteps(runId)) {
+        if (record.step.status !== "model" && record.step.status !== "tools")
+          continue;
+        record.step.status =
+          outcome.status === "interrupted"
+            ? "interrupted"
+            : outcome.status === "cancelled"
+              ? "cancelled"
+              : "failed";
+        record.step.error = outcome.error;
+        record.step.endedAt = new Date().toISOString();
+        for (const tool of record.step.tools)
+          if (tool.status === "pending" || tool.status === "running")
+            tool.status = record.step.status;
+        this.db
+          .update(tables.runSteps)
+          .set({ data: record })
+          .where(eq(tables.runSteps.id, record.step.id))
+          .run();
+        this.emit(old.sessionId, { type: "step.updated", step: record.step });
+      }
       const run: Run = {
         ...old,
         ...outcome,

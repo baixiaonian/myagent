@@ -46,6 +46,11 @@ export class SettingsService {
     changedKey: boolean;
   } {
     const old = this.store.settings();
+    if (
+      input.apiProtocol !== undefined &&
+      !["responses", "chat_completions"].includes(input.apiProtocol)
+    )
+      throw new AppError("invalid_settings", "请选择支持的模型协议。");
     if (old.revision !== input.expectedRevision)
       throw new AppError(
         "revision_conflict",
@@ -99,6 +104,7 @@ export class SettingsService {
         ...old,
         baseUrl: url.toString().replace(/\/$/, ""),
         model: input.model.trim(),
+        apiProtocol: input.apiProtocol ?? old.apiProtocol,
         systemPrompt: input.systemPrompt,
       },
       secret,

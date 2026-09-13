@@ -229,3 +229,45 @@ test("reading above streamed content suspends auto-scroll and offers return to b
   await page.getByRole("button", { name: "回到底部" }).click();
   await expect(page.getByRole("button", { name: "回到底部" })).toHaveCount(0);
 });
+
+// 双协议都经过真实网页与本地 HTTP：计划和工具由后端执行，页面刷新仅恢复投影。
+for (const protocol of ["responses", "chat_completions"]) {
+  test(`Agent 工具、计划与刷新恢复：${protocol}`, async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("dialog", { name: "模型设置" })).toBeVisible();
+    await page.getByRole("button", { name: "关闭弹窗" }).click();
+    await configure(page);
+    await page.getByRole("button", { name: "模型设置", exact: true }).click();
+    await page
+      .getByRole("combobox", { name: "模型协议" })
+      .selectOption(protocol);
+    await page.getByRole("button", { name: "测试连接" }).click();
+    await expect(page.getByText(/连接成功，模型已返回文字响应/)).toBeVisible();
+    await page.getByRole("button", { name: "保存设置" }).click();
+    await expect(
+      page.getByText("配置已保存，下次生成将使用新设置。"),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "关闭弹窗" }).click();
+    await send(page, "Agent 查询当前时间，按需维护计划");
+    await finished(page);
+    await expect(page.getByLabel("任务计划")).toContainText("查询时间");
+    await expect(
+      page.getByText("Agent 任务已完成，已查询时间并更新计划。"),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.getByLabel("任务计划")).toContainText(
+      "已获得真实工具结果",
+    );
+    await page.getByText("执行过程 · 3 次工具调用").click();
+    await page.getByText("get_current_time", { exact: true }).click();
+    await expect(
+      page.getByText(/"timezone": "Asia\/Shanghai"/).last(),
+    ).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(
+      "private-reasoning-fixture",
+    );
+    await page.getByRole("button", { name: "重新生成", exact: true }).click();
+    await finished(page);
+    await expect(page.getByLabel("任务计划")).toHaveCount(1);
+  });
+}
