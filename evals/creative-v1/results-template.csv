@@ -1,0 +1,9 @@
+suite_version,case_id,trial,model,protocol,config_fingerprint,artifact_sha256,completion,quality_score,critical_pass,final_pass,wall_seconds,human_wait_seconds,model_requests,input_tokens,cached_input_tokens,output_tokens,known_cost,currency,unpriced_requests,judge_cost,trace_id,reviewer,evidence_dir,notes
+1.0.0,01-tech-article,1,,,,,not_run,,,,,,,,,,,,,,,,,
+1.0.0,02-finance-article,1,,,,,not_run,,,,,,,,,,,,,,,,,
+1.0.0,03-material-synthesis,1,,,,,not_run,,,,,,,,,,,,,,,,,
+1.0.0,04-long-document,1,,,,,not_run,,,,,,,,,,,,,,,,,
+1.0.0,05-repository-docs,1,,,,,not_run,,,,,,,,,,,,,,,,,
+1.0.0,06-product-html,1,,,,,not_run,,,,,,,,,,,,,,,,,
+1.0.0,07-teaching-html,1,,,,,not_run,,,,,,,,,,,,,,,,,
+1.0.0,08-diagram-html,1,,,,,not_run,,,,,,,,,,,,,,,,,

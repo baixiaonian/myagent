@@ -1,0 +1,29 @@
+{
+  "repository": "pallets/itsdangerous",
+  "tag": "2.2.0",
+  "commit": "096c8d42545d3b68ea21a4f890fb2b2d8979c0bd",
+  "archive_url": "https://codeload.github.com/pallets/itsdangerous/tar.gz/096c8d42545d3b68ea21a4f890fb2b2d8979c0bd",
+  "archive_sha256": "d4efd6a06cc4118fdd4edd1cbd90987cd5d91dddd96f5cf4f70d027988385249",
+  "retrieved_at": "2026-09-29",
+  "included": [
+    "LICENSE.txt",
+    "pyproject.toml",
+    "src/itsdangerous/__init__.py",
+    "src/itsdangerous/_json.py",
+    "src/itsdangerous/encoding.py",
+    "src/itsdangerous/exc.py",
+    "src/itsdangerous/py.typed",
+    "src/itsdangerous/serializer.py",
+    "src/itsdangerous/signer.py",
+    "src/itsdangerous/timed.py",
+    "src/itsdangerous/url_safe.py",
+    "tests/test_itsdangerous/__init__.py",
+    "tests/test_itsdangerous/test_encoding.py",
+    "tests/test_itsdangerous/test_serializer.py",
+    "tests/test_itsdangerous/test_signer.py",
+    "tests/test_itsdangerous/test_timed.py",
+    "tests/test_itsdangerous/test_url_safe.py"
+  ],
+  "license": "BSD-3-Clause",
+  "omitted": "docs、已有 README、CI、Git 元数据；仅移除与评测无关目录，不改源码。"
+}

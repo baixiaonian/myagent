@@ -1,0 +1,58 @@
+{
+  "case_id": "05-repository-docs",
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "源码事实",
+      "weight": 35,
+      "full": "边界、异常、轮换和格式机制均对应当前源码，无不存在的接口",
+      "half": "整体正确但两处细节未经源码支持"
+    },
+    {
+      "id": "D2",
+      "name": "链路与架构",
+      "weight": 25,
+      "full": "dumps/loads穿过混入/序列化/签名/时间校验，解释数据如何变化",
+      "half": "只列文件职责，缺实际调用顺序"
+    },
+    {
+      "id": "D3",
+      "name": "示例与测试",
+      "weight": 20,
+      "full": "例子可运行，篡改与过期可验证，至少3个真实测试锚点",
+      "half": "有示例但测试引用或异常处理不完整"
+    },
+    {
+      "id": "D4",
+      "name": "新人可读性",
+      "weight": 10,
+      "full": "由目的到机制再到扩展，说明术语与风险",
+      "half": "过度贴代码或只给API列表"
+    },
+    {
+      "id": "D5",
+      "name": "交付与引用",
+      "weight": 10,
+      "full": "至少8个精确锚点，版本与裁剪边界透明",
+      "half": "源码链接笼统或参考不存在"
+    }
+  ],
+  "critical_gates": [
+    "将签名或base64说成保护明文秘密的加密，或把该库说成JWT/数据库产品。",
+    "核心调用链或核心API为编造；引用的主要源码文件不存在。"
+  ],
+  "facts": [
+    "固定提交096c8d42545d3b68ea21a4f890fb2b2d8979c0bd，2.2.0，BSD-3-Clause；仅提供src/tests/pyproject/license，不代表完整仓库。",
+    "Signer 使用 HMAC 等签名算法保证完整性，不隐藏明文；salt 用于不同用途区分，不是加密密钥替代品。",
+    "Serializer dumps: dump_payload -> make_signer.sign；loads: iter_unsigners.unsign -> load_payload。",
+    "URLSafeSerializerMixin 可在缩小结果时zlib压缩并base64编码，点号前缀标记压缩；不是加密。",
+    "TimestampSigner 添加时间戳；TimedSerializer loads 传 max_age，SignatureExpired 与 BadSignature 需区分。",
+    "新签名使用secret_keys最后一项；校验尝试可用旧钥；fallback_signers用于旧签名配置的验证，不让新签名继续用旧配置。"
+  ],
+  "review_steps": [
+    "用随附代码逐项核查8个位置和3个测试组；签名算法不必强制SHA256，按源码实际默认值评价。",
+    "在临时目录设置 PYTHONPATH=<工作区>/inputs/repository/src 运行示例。",
+    "到期测试用受控TimestampSigner或受控时间，避免无界sleep。"
+  ],
+  "score_rule": "sum(weight * score / 4)，score 为 0..4 整数。人工关键项全通过、机械交付检查通过、总分 >=80 且 D1 >=3 才算通过。"
+}

@@ -1,0 +1,5 @@
+format,total_documents,notes
+PDF,9000,含扫描件与可检索PDF
+DOCX,6000,存在多个版本
+HTML,3000,含旧内网导出
+TOTAL,18000,格式数量互斥

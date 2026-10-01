@@ -1,0 +1,64 @@
+[
+  {
+    "id": "a1",
+    "title": "WAL 为什么不能让多个写事务同时提交",
+    "url": "https://example.com/wal",
+    "tags": [
+      "技术",
+      "数据库"
+    ],
+    "summary": "理解日志与锁的边界，再决定是否切换数据库。",
+    "read": false
+  },
+  {
+    "id": "a2",
+    "title": "现金流和利润的差别",
+    "url": "https://example.com/cash",
+    "tags": [
+      "财经"
+    ],
+    "summary": "先看计算口径，再读增长率。",
+    "read": false
+  },
+  {
+    "id": "a3",
+    "title": "如何组织一份负责人能读懂的项目周报",
+    "url": "https://example.com/report",
+    "tags": [
+      "工作方法"
+    ],
+    "summary": "把事实、风险和待决策事项分开表达。",
+    "read": true
+  },
+  {
+    "id": "a4",
+    "title": "一个涉及长标题、多标签和移动端窄屏阅读体验的产品设计案例",
+    "url": "https://example.com/design",
+    "tags": [
+      "设计",
+      "工作方法"
+    ],
+    "summary": "卡片密度不能以牺牲可读性为代价。",
+    "read": false
+  },
+  {
+    "id": "a5",
+    "title": "事件循环与微任务队列",
+    "url": "https://example.com/event-loop",
+    "tags": [
+      "技术"
+    ],
+    "summary": "用逐步执行观察Promise和定时器顺序。",
+    "read": true
+  },
+  {
+    "id": "a6",
+    "title": "用信息图解释复杂系统",
+    "url": "https://example.com/diagram",
+    "tags": [
+      "设计"
+    ],
+    "summary": "线的方向、图例和数据口径比装饰更重要。",
+    "read": false
+  }
+]

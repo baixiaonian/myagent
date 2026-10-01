@@ -1,5 +1,7 @@
 # 当前状态
 
+新增[创作评测8题包](../evals/creative-v1/README.md)：5份Markdown与3份HTML任务，冻结材料、独立评分及离线核验工具。82份冻结文件和10项工具测试通过；此处不宣称Agent交付或质量通过。见[迭代记录](history/2026-09-29-creative-eval-suite.md)。
+
 更新时间：2026-09-09。当前里程碑：MyAgent 本地 Web Chat v1（代码 0.1.0）。
 
 ## 已实现

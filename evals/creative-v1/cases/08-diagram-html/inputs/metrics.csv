@@ -1,0 +1,7 @@
+metric,value,unit,denominator,as_of
+candidate_documents,900,documents,,2026-09-18
+published,720,documents,900,2026-09-18
+in_review,120,documents,900,2026-09-18
+failed,60,documents,900,2026-09-18
+quality_sample,180,documents,720,2026-09-18
+quality_sample_pass,162,documents,180,2026-09-18

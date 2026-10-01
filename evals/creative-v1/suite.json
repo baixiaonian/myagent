@@ -1,0 +1,113 @@
+{
+  "id": "myagent-creative-v1",
+  "version": "1.0.0",
+  "frozen_at": "2026-09-29",
+  "language": "zh-CN",
+  "case_count": 8,
+  "description": "8题原创专项回归集；公开事实与固定开源源码+原创虚构业务材料，不是任何公开榜单原题子集。",
+  "cases": [
+    {
+      "id": "01-tech-article",
+      "title": "SQLite 开启 WAL 后，为什么仍然 database is locked？",
+      "category": "技术文章",
+      "output": "output/article.md",
+      "length_units": [
+        2200,
+        3200
+      ],
+      "prompt": "cases/01-tech-article/PROMPT.md",
+      "inputs": "cases/01-tech-article/inputs",
+      "rubric": "graders/01-tech-article.json",
+      "origin": "custom_grounded_task"
+    },
+    {
+      "id": "02-finance-article",
+      "title": "微软 FY2025：利润增长为何没有带来同幅度自由现金流增长？",
+      "category": "财经文章",
+      "output": "output/article.md",
+      "length_units": [
+        2000,
+        3000
+      ],
+      "prompt": "cases/02-finance-article/PROMPT.md",
+      "inputs": "cases/02-finance-article/inputs",
+      "rubric": "graders/02-finance-article.json",
+      "origin": "custom_grounded_task"
+    },
+    {
+      "id": "03-material-synthesis",
+      "title": "星桥知识库试点：给负责人一份可信的进展简报",
+      "category": "材料梳理",
+      "output": "output/brief.md",
+      "length_units": [
+        1300,
+        2000
+      ],
+      "prompt": "cases/03-material-synthesis/PROMPT.md",
+      "inputs": "cases/03-material-synthesis/inputs",
+      "rubric": "graders/03-material-synthesis.json",
+      "origin": "original_synthetic_scenario"
+    },
+    {
+      "id": "04-long-document",
+      "title": "青岚公共图书馆：知识服务平台一期实施蓝图",
+      "category": "长篇文档",
+      "output": "output/blueprint.md",
+      "length_units": [
+        10000,
+        14000
+      ],
+      "prompt": "cases/04-long-document/PROMPT.md",
+      "inputs": "cases/04-long-document/inputs",
+      "rubric": "graders/04-long-document.json",
+      "origin": "original_synthetic_scenario"
+    },
+    {
+      "id": "05-repository-docs",
+      "title": "ItsDangerous：新人可验证的源码导读",
+      "category": "代码库文档",
+      "output": "output/guide.md",
+      "length_units": [
+        3000,
+        4500
+      ],
+      "prompt": "cases/05-repository-docs/PROMPT.md",
+      "inputs": "cases/05-repository-docs/inputs",
+      "rubric": "graders/05-repository-docs.json",
+      "origin": "custom_grounded_task"
+    },
+    {
+      "id": "06-product-html",
+      "title": "拾光：稍后读工作台交互原型",
+      "category": "产品设计",
+      "output": "output/index.html",
+      "length_units": null,
+      "prompt": "cases/06-product-html/PROMPT.md",
+      "inputs": "cases/06-product-html/inputs",
+      "rubric": "graders/06-product-html.json",
+      "origin": "original_synthetic_scenario"
+    },
+    {
+      "id": "07-teaching-html",
+      "title": "看得见的 JavaScript 事件循环",
+      "category": "教学演示",
+      "output": "output/index.html",
+      "length_units": null,
+      "prompt": "cases/07-teaching-html/PROMPT.md",
+      "inputs": "cases/07-teaching-html/inputs",
+      "rubric": "graders/07-teaching-html.json",
+      "origin": "custom_grounded_task"
+    },
+    {
+      "id": "08-diagram-html",
+      "title": "一页看懂文档发布系统：五种图解",
+      "category": "图解创作",
+      "output": "output/index.html",
+      "length_units": null,
+      "prompt": "cases/08-diagram-html/PROMPT.md",
+      "inputs": "cases/08-diagram-html/inputs",
+      "rubric": "graders/08-diagram-html.json",
+      "origin": "original_synthetic_scenario"
+    }
+  ]
+}

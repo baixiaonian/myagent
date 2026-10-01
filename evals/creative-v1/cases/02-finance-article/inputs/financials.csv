@@ -1,0 +1,6 @@
+metric,unit,FY2024,FY2025,source
+revenue,USD_million,245122,281724,MS-INCOME
+operating_income,USD_million,109433,128528,MS-INCOME
+net_income,USD_million,88136,101832,MS-INCOME
+operating_cash_flow,USD_million,118548,136162,MS-CASH
+cash_property_equipment_additions,USD_million,44477,64551,MS-CASH

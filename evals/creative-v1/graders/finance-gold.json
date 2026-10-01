@@ -1,0 +1,45 @@
+{
+  "unit": "USD_million",
+  "values": {
+    "revenue": [
+      245122,
+      281724
+    ],
+    "operating_income": [
+      109433,
+      128528
+    ],
+    "net_income": [
+      88136,
+      101832
+    ],
+    "operating_cash_flow": [
+      118548,
+      136162
+    ],
+    "cash_property_equipment_additions": [
+      44477,
+      64551
+    ],
+    "free_cash_flow": [
+      74071,
+      71611
+    ]
+  },
+  "yoy_percent": {
+    "revenue": 14.932156232406712,
+    "operating_income": 17.449032741494786,
+    "net_income": 15.539620586366532,
+    "operating_cash_flow": 14.85811654350979,
+    "cash_property_equipment_additions": 45.13343975537918,
+    "free_cash_flow": -3.3211378272198333
+  },
+  "operating_margin_percent": [
+    44.64429957327371,
+    45.62195624085985
+  ],
+  "fcf_margin_percent": [
+    30.218013886962407,
+    25.418849654271558
+  ]
+}
