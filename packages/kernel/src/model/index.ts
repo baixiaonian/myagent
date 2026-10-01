@@ -4,6 +4,7 @@
  */
 import type {
   JsonValue,
+  ObservationScope,
   ToolCall,
   ToolDefinition,
   Usage,
@@ -25,9 +26,15 @@ export type ModelEvent =
       response?: ModelResponse;
     };
 export interface ModelPort {
+  /** 与实际请求共用序列化，结果只用于本地估算，不暴露私有输入。 */
+  estimateInput?(
+    messages: readonly ModelMessage[],
+    tools?: readonly ToolDefinition[],
+  ): number;
   stream(
     messages: readonly ModelMessage[],
     signal: AbortSignal,
     tools?: readonly ToolDefinition[],
+    context?: ObservationScope,
   ): AsyncIterable<ModelEvent>;
 }

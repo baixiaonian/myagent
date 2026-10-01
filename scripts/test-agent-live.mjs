@@ -3,6 +3,7 @@
  * 为每种协议创建独立临时服务，持久化的测试配置只含占位密钥；绝不修改用户配置或原会话。
  * 报告只保存协议、状态、步骤和工具统计；无密钥、续接字段或完整会话，测试目录最终清理。
  */
+
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -15,6 +16,7 @@ import {
   OpenAIChatModel,
   OpenAIResponsesModel,
 } from "../packages/adapters/dist/index.js";
+import { isActiveRun } from "../packages/contracts/dist/index.js";
 
 const source = resolve(
   process.env.MYAGENT_SOURCE_DATA_DIR ?? join(homedir(), ".myagent"),
@@ -91,7 +93,7 @@ for (const protocol of ["chat_completions", "responses"]) {
         const snapshot = await api(`/sessions/${sessionId}`);
         if (
           snapshot.latestRun?.id === runId &&
-          snapshot.latestRun.status !== "running"
+          !isActiveRun(snapshot.latestRun.status)
         )
           return snapshot;
         await delay(300);

@@ -12,7 +12,10 @@
     "@myagent/contracts": "workspace:*",
     "@myagent/kernel": "workspace:*",
     "@myagent/state": "workspace:*",
-    "@myagent/content": "workspace:*"
+    "@myagent/content": "workspace:*",
+    "@myagent/extensions": "workspace:*",
+    "@myagent/orchestration": "workspace:*",
+    "@myagent/observability": "workspace:*"
   },
   "exports": {
     ".": {

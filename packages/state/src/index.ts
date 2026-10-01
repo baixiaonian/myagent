@@ -14,7 +14,10 @@ import type {
   Session,
   SessionSnapshot,
   Usage,
+  Workspace,
 } from "@myagent/contracts";
+
+export * from "./execution.js";
 // 数据库只保存不透明凭证引用；明文由 CredentialStore 单独管理，不能混入消息与事件。
 export interface StoredSettings extends ModelSettings {
   credentialRef: string | null;
@@ -26,6 +29,8 @@ export interface CredentialStore {
 }
 // 运行开始的事务输入；expectedRevision 来自用户看到的会话，fingerprint 用于幂等负载校验。
 export interface BeginRun {
+  executionMode?: import("@myagent/contracts").ExecutionMode;
+  origin?: Message["origin"];
   apiProtocol?: ApiProtocol;
   sessionId: string;
   expectedRevision: number;
@@ -44,7 +49,7 @@ export interface StoredStep {
 }
 // 终结输入不允许 running；错误和 usage 均可为空，未上报用量不能伪造为零。
 export interface FinishRun {
-  status: Exclude<Run["status"], "running">;
+  status: "succeeded" | "failed" | "cancelled" | "interrupted";
   finishReason: string | null;
   usage: Usage | null;
   error: ChatError | null;
@@ -57,7 +62,14 @@ export interface ChatStore {
     expectedRevision: number,
   ): StoredSettings;
   listSessions(): Session[];
-  createSession(): Session;
+  createSession(input?: {
+    id: string;
+    workspace?: Workspace;
+    parentSessionId?: string;
+    requestId?: string;
+    fingerprint?: string;
+  }): Session;
+  findSessionCreation?(requestId: string, fingerprint: string): Session | null;
   // 实现必须保证消息、运行状态与 cursor 同事务读取。
   snapshot(id: string): SessionSnapshot;
   renameSession(id: string, title: string, revision: number): Session;
@@ -86,3 +98,14 @@ export function contextBeforeQuestion(
   const index = messages.findIndex((message) => message.id === questionId);
   return index < 0 ? [] : messages.slice(0, index);
 }
+
+export * from "./commands.js";
+export * from "./context.js";
+export * from "./documents.js";
+export * from "./hooks.js";
+export * from "./memory.js";
+export * from "./observability.js";
+export * from "./plugins.js";
+export * from "./projects.js";
+export * from "./skills.js";
+export * from "./teams.js";

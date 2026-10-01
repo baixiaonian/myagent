@@ -1,10 +1,7 @@
 # observability
 
-观测契约、关联字段与脱敏约定。
+已接通观测 v1。纯端口、区间合并、价格快照与定点费用运算，仅依赖 contracts。
 
-状态：工程骨架。当前没有对应的 Agent 业务实现。
+应用协调在 `packages/application/src/observability.ts`；文件、HTTP、SQLite 和 OpenTelemetry 在 adapters。Web 通过 SDK 查询，不读取原始文件路径。
 
-- 入口：`src/index.ts`。
-- 允许的内部依赖：`@myagent/contracts`。
-- 开发前阅读 [模块关系](../../docs/architecture/modules.md) 和 [当前状态](../../docs/STATUS.md)。
-- 新增功能时同时更新上述文档、相关局部 AGENTS.md（规则有变化时）和 [迭代历史](../../docs/history/README.md)。
+入口：[架构](../../docs/architecture/observability.md)、[协议](../../docs/protocols/observability-v12.md)、[本模块约束](AGENTS.md)。

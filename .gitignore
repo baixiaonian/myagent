@@ -21,3 +21,9 @@ test-results/
 *.db-wal
 *.db-shm
 credentials.json
+
+# 本地浏览器视觉验收记录不进入源码提交。
+.playwright-cli/
+output/playwright/
+# 真实评测含会话、原始模型输入输出和独立托管仓库，仅保留本机证据，不提交。
+/output/evaluations/

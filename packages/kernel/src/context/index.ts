@@ -1,18 +1,23 @@
 /**
- * 纯上下文构建：完整历史由应用提供，本模块只选择每次模型调用实际携带的信息。
- * 当前运行不可拆散；历史按整次用户交互取舍，保证调用和结果及续接材料一起保留。
+ * 上下文端口与兼容构建器：Server 主路径注入异步 prepare；独立小型运行仍可使用同步 build。
+ * 兼容构建器保留旧整轮字符裁剪；新主路径按完整调用批次生成有来源的上下文视图。
  */
 import {
   AGENT_LIMITS,
   type AgentLimits,
   AppError,
+  type ContextStats,
   type JsonValue,
   LIMITS,
   type Message,
+  type ObservationScope,
   type ToolCall,
   type ToolDefinition,
 } from "@myagent/contracts";
 export interface ModelMessage {
+  /** 来源仅供本地上下文管理，适配器不得序列化到厂商协议。 */
+  sourceId?: string;
+  resultInfo?: JsonValue;
   role: "system" | "user" | "assistant" | "tool";
   content: string;
   toolCalls?: ToolCall[];
@@ -20,10 +25,14 @@ export interface ModelMessage {
   continuation?: JsonValue;
 }
 export interface ContextSnapshot {
+  contextVersion?: number;
+  stats?: ContextStats;
   messages: ModelMessage[];
   trimmed: boolean;
 }
 export interface ContextInput {
+  /** 显式传递本次准备所属步骤；仅关联观测，不进入厂商消息或影响上下文选择。 */
+  observation?: ObservationScope;
   instructions: string;
   history: readonly (readonly ModelMessage[])[];
   current: readonly ModelMessage[];
@@ -32,6 +41,7 @@ export interface ContextInput {
 }
 export interface ContextBuilder {
   build(input: ContextInput): ContextSnapshot;
+  prepare?(input: ContextInput, signal: AbortSignal): Promise<ContextSnapshot>;
 }
 // 用实际字符串长度加序列化附加字段估算容量；这不是 tokenizer。
 function size(message: ModelMessage): number {
@@ -105,3 +115,5 @@ export function buildContext(
     limits: { ...AGENT_LIMITS },
   });
 }
+
+export * from "./budget.js";

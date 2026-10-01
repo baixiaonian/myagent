@@ -16,6 +16,10 @@ export function executionHistory(
   store: ChatStore,
   messages: readonly Message[],
   identity: string,
+  augment?: (
+    runId: string,
+    messages: readonly ModelMessage[],
+  ) => ModelMessage[],
 ): ModelMessage[][] {
   return messages
     .filter((m) => m.role === "user")
@@ -27,12 +31,20 @@ export function executionHistory(
           m.status === "completed",
       );
       if (!answer) return [];
-      const records = store.getSteps(answer.runId);
+      // 恢复后的成功 Run 可能保留中断的模型尝试；它们是审计记录，不进入配对对话链。
+      const records = store
+        .getSteps(answer.runId)
+        .filter((record) => record.step.status === "completed");
       const round: ModelMessage[] = [
-        { role: "user", content: question.content },
+        { role: "user", content: question.content, sourceId: question.id },
       ];
       if (!records.length || records.some((r) => r.identity !== identity))
-        return [[...round, { role: "assistant", content: answer.content }]];
+        return [
+          [
+            ...round,
+            { role: "assistant", content: answer.content, sourceId: answer.id },
+          ],
+        ];
       for (const { step, continuation } of records) {
         if (step.status !== "completed" || step.tools.some((t) => !t.result))
           throw new AppError(
@@ -42,6 +54,7 @@ export function executionHistory(
           );
         round.push({
           role: "assistant",
+          sourceId: step.id,
           content: step.content,
           ...(step.tools.length
             ? {
@@ -59,11 +72,24 @@ export function executionHistory(
             throw new AppError("context_history", "历史工具结果缺失。", 500);
           round.push({
             role: "tool",
+            sourceId: `${step.id}/tool/${tool.id}`,
             callId: tool.id,
             content: tool.result.modelContent,
+            resultInfo: {
+              resultRef: tool.result.resultRef ?? null,
+              outcome:
+                tool.result.outcome ??
+                (tool.result.ok ? "succeeded" : "failed"),
+              error: tool.result.error
+                ? {
+                    code: tool.result.error.code,
+                    message: tool.result.error.message,
+                  }
+                : null,
+            },
           });
         }
       }
-      return [round];
+      return [augment ? augment(answer.runId, round) : round];
     });
 }

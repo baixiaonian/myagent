@@ -9,7 +9,9 @@ import { dirname } from "node:path";
 import {
   AppError,
   type ChatEvent,
+  CONTEXT_DEFAULTS,
   type EventData,
+  isActiveRun,
   type Message,
   type Run,
   type Session,
@@ -25,8 +27,24 @@ import type {
 import Database from "better-sqlite3";
 import { and, desc, eq, gt, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/better-sqlite3";
+import { SqliteContextStore } from "./context.js";
+import { SqliteExecutionStore } from "./execution.js";
+import { SqliteHookStore } from "./hooks.js";
+import { SqliteMemoryStore } from "./memory.js";
+import { SqliteObservationStore } from "./observability.js";
+import { SqlitePluginStore } from "./plugins.js";
 import * as tables from "./schema.js";
+import { SqliteSkillStore } from "./skills.js";
+import { SqliteTeamStore } from "./teams.js";
 export class SqliteChatStore implements ChatStore {
+  readonly observations: SqliteObservationStore;
+  readonly context: SqliteContextStore;
+  readonly execution: SqliteExecutionStore;
+  readonly memory: SqliteMemoryStore;
+  readonly hooks: SqliteHookStore;
+  readonly plugins: SqlitePluginStore;
+  readonly teams: SqliteTeamStore;
+  readonly skills: SqliteSkillStore;
   private readonly raw: Database.Database;
   private readonly db;
   constructor(path: string) {
@@ -41,7 +59,7 @@ export class SqliteChatStore implements ChatStore {
     this.raw.pragma("busy_timeout = 5000");
     const version = this.raw.pragma("user_version", { simple: true }) as number;
     // 拒绝用旧代码打开未来版本数据库，防止静默按旧结构读写。
-    if (version > 2) {
+    if (version > 13) {
       this.raw.close();
       throw new AppError(
         "schema_version",
@@ -73,7 +91,192 @@ export class SqliteChatStore implements ChatStore {
         );
         this.raw.pragma("user_version = 2");
       })();
+    if (version < 3)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0003_tools.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 3");
+      })();
+    if (version < 4)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0004_projects.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 4");
+      })();
+    if (version < 5)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0005_commands.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 5");
+      })();
+
+    if (version < 6)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0006_context.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 6");
+      })();
+    if (version < 7)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0007_memory.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 7");
+      })();
+    this.memory = new SqliteMemoryStore(this.raw);
+    this.context = new SqliteContextStore(this.raw, (id, event) =>
+      this.emit(id, event),
+    );
+    if (version < 8)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0008_skills.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 8");
+      })();
+    if (version < 9)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0009_hooks.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 9");
+      })();
+    if (version < 10)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0010_plugins.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 10");
+      })();
+    this.plugins = new SqlitePluginStore(this.raw);
+    this.hooks = new SqliteHookStore(this.raw, (id, event) =>
+      this.emit(id, event),
+    );
+    this.skills = new SqliteSkillStore(this.raw);
+    if (version < 11)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0011_teams.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 11");
+      })();
+    if (version < 12)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0012_observability.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 12");
+      })();
+    if (version < 13)
+      this.raw.transaction(() => {
+        this.raw.exec(
+          readFileSync(
+            new URL(
+              "../../../../../migrations/0013_execution_mode.sql",
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        );
+        this.raw.pragma("user_version = 13");
+      })();
+    this.observations = new SqliteObservationStore(this.raw);
+    this.teams = new SqliteTeamStore(this.raw, (sessionId, runId) => {
+      this.emit(sessionId, { type: "team.updated", runId });
+    });
     this.db = drizzle(this.raw);
+    this.execution = new SqliteExecutionStore(
+      this.raw,
+      (id, event) => this.emit(id, event),
+      (id, workspaceId, revision) => {
+        this.raw.transaction(() => {
+          const snapshot = this.snapshot(id);
+          if (snapshot.session.revision !== revision)
+            throw new AppError("revision_conflict", "会话已更新。", 409);
+          if (
+            snapshot.activeRun ||
+            (snapshot.session.workspaceId &&
+              snapshot.session.workspaceId !== workspaceId)
+          )
+            throw new AppError(
+              "workspace_bound",
+              "活动或已绑定会话不能更换工作区，请新建会话。",
+              409,
+            );
+          this.db
+            .update(tables.sessions)
+            .set({ workspaceId })
+            .where(eq(tables.sessions.id, id))
+            .run();
+          const session = this.touch(id);
+          this.emit(id, { type: "session.updated", session });
+        })();
+      },
+    );
     if (!this.db.select().from(tables.settings).get())
       this.db
         .insert(tables.settings)
@@ -116,7 +319,17 @@ export class SqliteChatStore implements ChatStore {
     if (!row) return;
     const data: ChatEvent = {
       ...event,
-      schemaVersion: 2,
+      schemaVersion:
+        event.type === "team.updated" ||
+        (event.type === "run.updated" && event.run.status === "waiting_agents")
+          ? 6
+          : event.type === "hook.updated"
+            ? 5
+            : event.type === "context.updated" ||
+                (event.type === "run.updated" &&
+                  event.run.status === "waiting_context")
+              ? 4
+              : 3,
       sessionId: id,
       seq: row.seq,
       createdAt: new Date().toISOString(),
@@ -147,6 +360,10 @@ export class SqliteChatStore implements ChatStore {
     return {
       ...row.data,
       apiProtocol: row.data.apiProtocol ?? "chat_completions",
+      contextWindowTokens:
+        row.data.contextWindowTokens ?? CONTEXT_DEFAULTS.contextWindowTokens,
+      outputReserveTokens:
+        row.data.outputReserveTokens ?? CONTEXT_DEFAULTS.outputReserveTokens,
     };
   }
   // 设置也采用乐观版本检查，避免两个页面用旧 revision 相互覆盖连接配置。
@@ -181,22 +398,64 @@ export class SqliteChatStore implements ChatStore {
       .from(tables.sessions)
       .orderBy(desc(tables.sessions.updatedAt))
       .all()
+      .filter(
+        (row) =>
+          !(
+            this.raw
+              .prepare("SELECT parent_session_id FROM sessions WHERE id=?")
+              .get(row.id) as { parent_session_id: string | null }
+          ).parent_session_id,
+      )
       .map((row) => this.publicSession(row));
   }
-  createSession(): Session {
-    const now = new Date().toISOString();
-    const session = {
-      id: randomUUID(),
-      title: "新对话",
-      revision: 0,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.db
-      .insert(tables.sessions)
-      .values({ ...session, seq: 0 })
-      .run();
-    return session;
+  findSessionCreation(requestId: string, fingerprint: string): Session | null {
+    const row = this.raw
+      .prepare("SELECT * FROM session_creations WHERE request_id = ?")
+      .get(requestId) as
+      | { fingerprint: string; session_id: string }
+      | undefined;
+    if (!row) return null;
+    if (row.fingerprint !== fingerprint)
+      throw new AppError(
+        "idempotency_conflict",
+        "创建请求的项目目录已经变化。",
+        409,
+      );
+    return this.publicSession(this.sessionRow(row.session_id));
+  }
+  createSession(input?: Parameters<ChatStore["createSession"]>[0]): Session {
+    return this.raw.transaction(() => {
+      if (input?.requestId) {
+        const previous = this.findSessionCreation(
+          input.requestId,
+          input.fingerprint ?? "",
+        );
+        if (previous) return previous;
+      }
+      const now = new Date().toISOString();
+      const session = {
+        id: input?.id ?? randomUUID(),
+        title: "新对话",
+        revision: 0,
+        createdAt: now,
+        updatedAt: now,
+        workspaceId: input?.workspace?.id ?? null,
+      };
+      if (input?.workspace) this.execution.put("workspaces", input.workspace);
+      this.db
+        .insert(tables.sessions)
+        .values({ ...session, seq: 0 })
+        .run();
+      if (input?.parentSessionId)
+        this.raw
+          .prepare("UPDATE sessions SET parent_session_id=? WHERE id=?")
+          .run(input.parentSessionId, session.id);
+      if (input?.requestId)
+        this.raw
+          .prepare("INSERT INTO session_creations VALUES (?, ?, ?)")
+          .run(input.requestId, input.fingerprint ?? "", session.id);
+      return session;
+    })();
   }
   // 历史、运行状态和 cursor 同事务读取，防止快照与补读起点不一致而漏事件或重复增量。
   // rowid 保留同毫秒写入的实际顺序，不能只靠时间戳排序。
@@ -217,6 +476,9 @@ export class SqliteChatStore implements ChatStore {
         .all();
       return {
         session: this.publicSession(row),
+        plugins: records[0]
+          ? (this.plugins.get("runs", records[0].id)?.references ?? [])
+          : [],
         messages,
         steps: this.db
           .select()
@@ -224,10 +486,31 @@ export class SqliteChatStore implements ChatStore {
           .where(eq(tables.runSteps.sessionId, id))
           .orderBy(sql`rowid`)
           .all()
-          .map((item) => item.data.step),
+          .map((item) => {
+            const step = structuredClone(item.data.step);
+            // v3 工具事实归 invocation；旧 Step 无 invocation 时保持原样展示。
+            const invocations = this.execution.list("invocations", {
+              runId: step.runId,
+            });
+            for (const tool of step.tools) {
+              const invocation = invocations.find(
+                (record) =>
+                  record.stepId === step.id && record.callId === tool.id,
+              );
+              if (!invocation) continue;
+              tool.result = invocation.result;
+              tool.status =
+                invocation.status === "prepared"
+                  ? "pending"
+                  : invocation.status === "denied"
+                    ? "failed"
+                    : invocation.status;
+            }
+            return step;
+          }),
         latestRun: records[0]?.data ?? null,
         activeRun:
-          records.find((item) => item.status === "running")?.data ?? null,
+          records.find((item) => isActiveRun(item.status))?.data ?? null,
         cursor: row.seq,
       };
     })();
@@ -307,6 +590,7 @@ export class SqliteChatStore implements ChatStore {
             )
           : undefined;
       const assistant: Message = {
+        origin: null,
         id: randomUUID(),
         sessionId: input.sessionId,
         runId,
@@ -327,6 +611,7 @@ export class SqliteChatStore implements ChatStore {
         assistantMessageId: assistant.id,
         originalAssistantId: original?.id ?? null,
         model: input.model,
+        executionMode: input.executionMode ?? "standard",
         apiProtocol: input.apiProtocol ?? "chat_completions",
         stepCount: 0,
         contextTrimmed: input.contextTrimmed,
@@ -338,6 +623,7 @@ export class SqliteChatStore implements ChatStore {
       };
       if (input.kind === "send") {
         const user: Message = {
+          origin: input.origin ?? null,
           id: userId,
           sessionId: input.sessionId,
           runId,
@@ -415,7 +701,7 @@ export class SqliteChatStore implements ChatStore {
         .from(tables.runs)
         .where(eq(tables.runs.id, record.step.runId))
         .get()?.data;
-      if (run?.status !== "running") return false;
+      if (!run || !isActiveRun(run.status)) return false;
       const step = record.step;
       this.db
         .insert(tables.runSteps)
@@ -510,7 +796,7 @@ export class SqliteChatStore implements ChatStore {
         .from(tables.runs)
         .where(eq(tables.runs.id, runId))
         .get()?.data;
-      if (old?.status !== "running") return;
+      if (!old || !isActiveRun(old.status)) return;
       // 进程退出可能没有来得及写 Step 终态；与 Run 在同一事务内修补，不回放动作。
       for (const record of this.getSteps(runId)) {
         if (record.step.status !== "model" && record.step.status !== "tools")
@@ -591,11 +877,36 @@ export class SqliteChatStore implements ChatStore {
   }
   // 启动时仅修补数据库遗留 running 状态，保留已有文字；不读取凭证或重新请求模型。
   recoverInterrupted(): void {
-    for (const row of this.db
-      .select()
-      .from(tables.runs)
-      .where(eq(tables.runs.status, "running"))
-      .all())
+    this.context.recover();
+    for (const row of this.db.select().from(tables.runs).all()) {
+      if (!isActiveRun(row.status)) continue;
+      if (this.execution.get("checkpoints", row.id)) {
+        this.raw.transaction(() => {
+          this.execution.setRunStatus(row.id, "recoverable");
+          for (const record of this.getSteps(row.id))
+            if (
+              record.step.status === "model" ||
+              record.step.status === "tools"
+            ) {
+              record.step.status = "interrupted";
+              record.step.error = {
+                code: "interrupted",
+                message: "本地服务重启，等待手动继续。",
+              };
+              record.step.endedAt = new Date().toISOString();
+              this.db
+                .update(tables.runSteps)
+                .set({ data: record })
+                .where(eq(tables.runSteps.id, record.step.id))
+                .run();
+              this.emit(row.sessionId, {
+                type: "step.updated",
+                step: record.step,
+              });
+            }
+        })();
+        continue;
+      }
       this.finishRun(row.id, {
         status: "interrupted",
         finishReason: null,
@@ -605,8 +916,10 @@ export class SqliteChatStore implements ChatStore {
           message: "上次生成因本地服务退出而中断，可手动重试。",
         },
       });
+    }
   }
   close(): void {
+    this.observations.flush();
     this.raw.close();
   }
 }

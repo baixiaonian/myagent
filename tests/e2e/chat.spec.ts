@@ -88,6 +88,9 @@ test("first use, connection test, Markdown, multiround, regenerate, rename, refr
   await expect(page.getByRole("article", { name: "你的消息" })).toHaveCount(2);
   await page.reload();
   await expect(page.getByRole("article", { name: "你的消息" })).toHaveCount(2);
+  await page
+    .getByRole("button", { name: "展示 Markdown", exact: true })
+    .hover();
   await page.getByRole("button", { name: "重命名：展示 Markdown" }).click();
   await page.getByLabel("对话标题").fill("我的笔记");
   await page.getByRole("button", { name: "保存名称" }).click();
@@ -96,7 +99,7 @@ test("first use, connection test, Markdown, multiround, regenerate, rename, refr
   ).toBeVisible();
   await page.getByRole("button", { name: "开启新对话" }).click();
   await expect(
-    page.getByRole("heading", { name: "今天，想聊点什么？" }),
+    page.getByRole("heading", { name: "想做点什么？" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "我的笔记", exact: true }).click();
   await expect(page.getByRole("article", { name: "你的消息" })).toHaveCount(2);
@@ -110,6 +113,32 @@ test("first use, connection test, Markdown, multiround, regenerate, rename, refr
       JSON.stringify({ ...localStorage, ...sessionStorage }),
     ),
   ).not.toContain("sk-e2e-fake-only");
+});
+test("余额不足显示明确计费原因，刷新保留且不会自动重试", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "关闭弹窗" }).click();
+  await configure(page, "payment");
+  await send(page, "余额不足的测试任务");
+  const notice =
+    "模型账户余额不足或计费受限，请到模型服务商检查余额与计费状态后重试。";
+  await expect(page.getByText(notice, { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "停止生成" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "重试回答" })).toBeVisible();
+  const sessions = (await (await request.get("/api/v1/sessions")).json())
+    .sessions;
+  const url = `/api/v1/sessions/${sessions[0].id}`;
+  const before = await (await request.get(url)).json();
+  expect(before.latestRun.error.code).toBe("model_payment_required");
+  expect(before.latestRun.stepCount).toBe(1);
+  await page.reload();
+  await expect(page.getByText(notice, { exact: true })).toBeVisible();
+  const after = await (await request.get(url)).json();
+  expect(after.latestRun.id).toBe(before.latestRun.id);
+  expect(after.latestRun.stepCount).toBe(1);
+  expect(after.activeRun).toBeNull();
 });
 test("refresh during generation, draft preservation, IME Enter, stop and failed regeneration", async ({
   page,
@@ -258,8 +287,32 @@ for (const protocol of ["responses", "chat_completions"]) {
     await expect(page.getByLabel("任务计划")).toContainText(
       "已获得真实工具结果",
     );
-    await page.getByText("执行过程 · 3 次工具调用").click();
-    await page.getByText("get_current_time", { exact: true }).click();
+    await expect(page.getByText("执行记录 · 3 次工具调用")).toBeVisible();
+    const process = page.locator(".run-process");
+    await expect(process.locator(".execution-step")).toHaveCount(2);
+    // 完成后整轮默认收起，最终答案可读；重新展开仍保持中间文字与工具的真实顺序。
+    await expect(process).not.toHaveAttribute("open", "");
+    await expect(process.locator(".execution-step").first()).not.toBeVisible();
+    await process.locator(":scope > summary").click();
+    for (const step of await process.locator(".execution-step").all()) {
+      await expect(step.locator(".markdown")).toHaveText("正在处理任务。");
+      await expect(step.locator(".tool-batch")).not.toHaveAttribute("open", "");
+    }
+    await expect(page.locator(".message-avatar,.message-author")).toHaveCount(
+      0,
+    );
+    await page.screenshot({
+      path: `.cache/qoder-ui/agent-${protocol}.png`,
+      fullPage: true,
+    });
+    const batch = page.locator(".tool-batch").filter({
+      has: page.locator(".tool-call", { hasText: "get_current_time" }),
+    });
+    await batch.locator(":scope > summary").click();
+    await batch
+      .locator(".tool-call summary")
+      .filter({ hasText: "get_current_time" })
+      .click();
     await expect(
       page.getByText(/"timezone": "Asia\/Shanghai"/).last(),
     ).toBeVisible();

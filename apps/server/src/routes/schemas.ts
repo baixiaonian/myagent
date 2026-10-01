@@ -14,6 +14,8 @@ export const settingsSchema = {
   additionalProperties: false,
   required: ["baseUrl", "model", "systemPrompt", "expectedRevision"],
   properties: {
+    contextWindowTokens: { type: "integer", minimum: 1, maximum: 2147483647 },
+    outputReserveTokens: { type: "integer", minimum: 1, maximum: 2147483647 },
     apiProtocol: { type: "string", enum: ["responses", "chat_completions"] },
     baseUrl: text(2000),
     model: text(200),
@@ -28,6 +30,13 @@ export const runSchema = {
   additionalProperties: false,
   required: ["requestId", "expectedRevision", "content"],
   properties: {
+    executionMode: { type: "string", enum: ["standard", "full_access"] },
+    skillIds: {
+      type: "array",
+      maxItems: 100,
+      uniqueItems: true,
+      items: text(100),
+    },
     requestId: text(100),
     expectedRevision: revision,
     content: text(8000),
@@ -38,7 +47,18 @@ export const regenerateSchema = {
   type: "object",
   additionalProperties: false,
   required: ["requestId", "expectedRevision"],
-  properties: { requestId: text(100), expectedRevision: revision },
+  properties: {
+    executionMode: { type: "string", enum: ["standard", "full_access"] },
+    skillIds: {
+      type: "array",
+      maxItems: 100,
+      uniqueItems: true,
+      items: text(100),
+    },
+    requestId: text(100),
+    expectedRevision: revision,
+    confirmSideEffects: { type: "boolean" },
+  },
 };
 export const renameSchema = {
   type: "object",

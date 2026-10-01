@@ -22,7 +22,7 @@
 | --- | --- | --- |
 | 公开类型与契约 | 字段语义、版本、可空值、状态归属和调用方责任 | [contracts](../../packages/contracts/src/index.ts)、[state](../../packages/state/src/index.ts) |
 | 开始运行 | 幂等检查为何在前、何时冻结设置、原子创建哪些记录 | [ChatService](../../packages/application/src/chat.ts) |
-| 上下文和模型流 | 整轮裁剪、字符预算、一次调用、EOF 与完整结束的区别 | [context](../../packages/kernel/src/context/index.ts)、[runtime](../../packages/kernel/src/runtime/index.ts) |
+| 上下文和模型流 | 完整批次、估算预算、摘要事务、取消和 EOF 与完整结束的区别 | [context](../../packages/kernel/src/context/index.ts)、[runtime](../../packages/kernel/src/runtime/index.ts) |
 | 事务与事件 | 原子性范围、revision 与 seq 的区别、迟到写入如何处理 | [SqliteChatStore](../../packages/adapters/src/storage/sqlite/store.ts) |
 | 异步生命周期 | 谁发起和持有任务、如何取消、释放资源、丢弃过期结果 | [工作台](../../apps/web/src/App.tsx)、[SDK](../../packages/sdk/src/index.ts) |
 | 凭证与错误 | 哪些字段可公开、文件与数据库的提交顺序、失败如何补偿 | [设置](../../packages/application/src/settings.ts)、[凭证](../../packages/adapters/src/credentials/index.ts) |

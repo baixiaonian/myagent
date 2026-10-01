@@ -1,10 +1,8 @@
 # orchestration
 
-Workflow、调度、后台工作及子任务协调。
+轻量团队协调原语，当前提供 FIFO 模型并发队列和等待环检测。持久任务/收件箱与运行调用由 application/TeamService 协调，不在此包内复制状态。
 
-状态：工程骨架。当前没有对应的 Agent 业务实现。
-
-- 入口：`src/index.ts`。
-- 允许的内部依赖：`@myagent/contracts`。
-- 开发前阅读 [模块关系](../../docs/architecture/modules.md) 和 [当前状态](../../docs/STATUS.md)。
-- 新增功能时同时更新上述文档、相关局部 AGENTS.md（规则有变化时）和 [迭代历史](../../docs/history/README.md)。
+- 入口：`src/index.ts`；内部只依赖 `@myagent/contracts`。
+- 通过 contracts 中立 RunCommandPort 协作，禁止反向依赖 application 或创建第二个循环。
+- Workflow、网络 A2A、递归团队与后台任务仍未实现。
+- 见 [团队架构](../../docs/architecture/teams.md)、[模块关系](../../docs/architecture/modules.md)、[当前状态](../../docs/STATUS.md)。

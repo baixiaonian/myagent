@@ -3,18 +3,63 @@
  * 服务端负责状态机；SDK 只处理传输错误、游标连续性与重复事件，不自动重试生成命令。
  */
 import type {
+  ApprovalDecision,
+  ApprovalRequest,
   ChatEvent,
+  CommandAssessment,
+  CommandConfigConfirmation,
+  CommandConfigSave,
+  CommandConfigTarget,
+  CommandConfigView,
+  CommandEvaluationInput,
+  ContextResumeInput,
+  ContextView,
+  CreateSessionInput,
+  DirectoryListing,
+  DirectorySelection,
+  ExecutionConcern,
+  ExecutionOverview,
+  HistoryPage,
+  HistoryQuery,
+  McpConfigConfirmation,
+  McpConfigSave,
+  McpConfigTarget,
+  McpConfigView,
+  McpConnection,
+  McpConnectionInput,
+  McpLiveState,
+  McpOverview,
+  McpRemoval,
+  MemoryEntry,
+  MemoryJobView,
+  MemoryOverview,
+  MemoryPage,
+  MemoryQuery,
+  MemoryRead,
+  MemorySettings,
+  MemoryUpdate,
+  PermissionGrant,
   PublicSettings,
   RegenerateInput,
+  ResultPage,
   Run,
   RunAccepted,
   RunInput,
   Session,
+  SessionMemorySettings,
   SessionSnapshot,
   SettingsInput,
+  SkillCatalog,
+  SkillEntry,
+  SkillSource,
+  SkillSourceInput,
+  ToolInvocation,
+  Workspace,
 } from "@myagent/contracts";
+import { isActiveRun } from "@myagent/contracts";
 
 export type * from "@myagent/contracts";
+export { CONTEXT_DEFAULTS } from "@myagent/contracts";
 export class ApiError extends Error {
   constructor(
     public readonly code: string,
@@ -46,7 +91,7 @@ export function applyEvent(
   // 最新运行用于显示失败 / 停止状态；activeRun 只保留 running，终态事件会解除输入区忙碌状态。
   if (event.type === "run.updated") {
     next.latestRun = event.run;
-    next.activeRun = event.run.status === "running" ? event.run : null;
+    next.activeRun = isActiveRun(event.run.status) ? event.run : null;
   }
   if (event.type === "message.delta")
     next.messages = next.messages.map((message) =>
@@ -65,11 +110,253 @@ export function applyEvent(
   return next;
 }
 export class ChatClient {
+  documentFiles(workspaceId: string, path = ".", offset = 0) {
+    return this.request<import("@myagent/contracts").DocumentDirectory>(
+      `/projects/${encodeURIComponent(workspaceId)}/files?${new URLSearchParams({ path, offset: String(offset) })}`,
+    );
+  }
+  document(workspaceId: string, path: string) {
+    return this.request<import("@myagent/contracts").ProjectDocument>(
+      `/projects/${encodeURIComponent(workspaceId)}/document?${new URLSearchParams({ path })}`,
+    );
+  }
+  saveDocument(
+    workspaceId: string,
+    input: import("@myagent/contracts").DocumentSave,
+  ) {
+    return this.request<import("@myagent/contracts").ProjectDocument>(
+      `/projects/${encodeURIComponent(workspaceId)}/document`,
+      "PUT",
+      input,
+    );
+  }
+
+  /** 观测查询独立于聊天 SSE，原始材料只由调试页面显式读取。 */
+  runObservation(
+    runId: string,
+  ): Promise<import("@myagent/contracts").RunObservationSummary> {
+    return this.request(`/observability/runs/${encodeURIComponent(runId)}`);
+  }
+  observationSettings() {
+    return this.request<
+      import("@myagent/contracts").ObservationSettings & {
+        dropped: number;
+        ledgerFailed: boolean;
+        exporter: { failedBatches: number; exportedSpans: number } | null;
+        exportEnabled: boolean;
+        captureBytes: number;
+      }
+    >("/observability/settings");
+  }
+  saveObservationSettings(input: {
+    requestId: string;
+    expectedRevision: number;
+    debug: boolean;
+    retentionDays: number;
+  }) {
+    return this.request<import("@myagent/contracts").ObservationSettings>(
+      "/observability/settings",
+      "PUT",
+      input,
+    );
+  }
+  private observationQuery(
+    query: import("@myagent/contracts").ObservationQuery,
+  ) {
+    return new URLSearchParams(
+      Object.entries(query)
+        .filter(([, v]) => v !== undefined && v !== "")
+        .map(([k, v]) => [k, String(v)]),
+    ).toString();
+  }
+  traces(query: import("@myagent/contracts").ObservationQuery = {}) {
+    return this.request<{
+      items: import("@myagent/contracts").TraceRecord[];
+      nextOffset: number | null;
+    }>(`/observability/traces?${this.observationQuery(query)}`);
+  }
+  trace(id: string, spanOffset = 0, eventOffset = 0) {
+    return this.request<import("@myagent/contracts").TracePage>(
+      `/observability/traces/${encodeURIComponent(id)}?spanOffset=${spanOffset}&eventOffset=${eventOffset}`,
+    );
+  }
+  spanEvidence(traceId: string, spanId: string) {
+    return this.request<import("@myagent/contracts").SpanEvidence>(
+      `/observability/traces/${encodeURIComponent(traceId)}/spans/${encodeURIComponent(spanId)}/evidence`,
+    );
+  }
+  modelCalls(query: import("@myagent/contracts").ObservationQuery = {}) {
+    return this.request<{
+      items: import("@myagent/contracts").ModelCallRecord[];
+      nextOffset: number | null;
+    }>(`/observability/calls?${this.observationQuery(query)}`);
+  }
+  modelCall(id: string) {
+    return this.request<{
+      call: import("@myagent/contracts").ModelCallRecord;
+      captures: import("@myagent/contracts").CaptureRecord[];
+    }>(`/observability/calls/${encodeURIComponent(id)}`);
+  }
+  observationUsage(query: import("@myagent/contracts").ObservationQuery = {}) {
+    return this.request<{
+      total: import("@myagent/contracts").UsageSummary;
+      groups: ({ key: string } & import("@myagent/contracts").UsageSummary)[];
+      startedAt: string;
+    }>(`/observability/usage?${this.observationQuery(query)}`);
+  }
+  modelPrices() {
+    return this.request<import("@myagent/contracts").ModelPrice[]>(
+      "/observability/prices",
+    );
+  }
+  saveModelPrice(
+    price: Pick<
+      import("@myagent/contracts").ModelPrice,
+      | "connection"
+      | "model"
+      | "currency"
+      | "input"
+      | "output"
+      | "cacheRead"
+      | "cacheWrite"
+    >,
+    expectedRevision: number,
+  ) {
+    return this.request<import("@myagent/contracts").ModelPrice>(
+      "/observability/prices",
+      "PUT",
+      { price, expectedRevision, requestId: crypto.randomUUID() },
+    );
+  }
+  capturePage(callId: string, captureId: string, offset = 0) {
+    return this.request<import("@myagent/contracts").CapturePage>(
+      `/observability/calls/${encodeURIComponent(callId)}/captures/${encodeURIComponent(captureId)}?offset=${offset}`,
+    );
+  }
+  captureDownload(callId: string, captureId: string) {
+    return `${this.base}/observability/calls/${encodeURIComponent(callId)}/captures/${encodeURIComponent(captureId)}?download=1`;
+  }
+  clearCapture(callId: string, captureId: string, expectedRevision: number) {
+    return this.request(
+      `/observability/calls/${encodeURIComponent(callId)}/captures/${encodeURIComponent(captureId)}`,
+      "DELETE",
+      { requestId: crypto.randomUUID(), expectedRevision },
+    );
+  }
+
+  team(id: string) {
+    return this.request<import("@myagent/contracts").TeamView>(
+      `/sessions/${encodeURIComponent(id)}/team`,
+    );
+  }
+  teamMessages(id: string, cursor = "latest") {
+    return this.request<
+      import("@myagent/contracts").TeamPage<
+        import("@myagent/contracts").TeamMessage
+      >
+    >(
+      `/sessions/${encodeURIComponent(id)}/team/messages?cursor=${encodeURIComponent(cursor)}`,
+    );
+  }
+  agentHistory(id: string, agentId: string, cursor = "0:0") {
+    return this.request<import("@myagent/contracts").AgentHistoryPage>(
+      `/sessions/${encodeURIComponent(id)}/agents/${encodeURIComponent(agentId)}/history?cursor=${encodeURIComponent(cursor)}`,
+    );
+  }
+  stopAgent(
+    id: string,
+    agentId: string,
+    input: import("@myagent/contracts").TeamStopInput,
+  ) {
+    return this.request<import("@myagent/contracts").TeamView>(
+      `/sessions/${encodeURIComponent(id)}/agents/${encodeURIComponent(agentId)}/stop`,
+      "POST",
+      input,
+    );
+  }
+
+  hookConfig(
+    target: import("@myagent/contracts").McpConfigTarget,
+  ): Promise<import("@myagent/contracts").HookConfigView> {
+    return this.request(
+      `/hooks/config?${new URLSearchParams({ scope: target.scope, ...(target.workspaceId ? { workspaceId: target.workspaceId } : {}) })}`,
+    );
+  }
+  saveHookConfig(
+    input: import("@myagent/contracts").HookConfigSave,
+  ): Promise<import("@myagent/contracts").HookConfigView> {
+    return this.request("/hooks/config", "PUT", input);
+  }
+  confirmHookConfig(
+    target: import("@myagent/contracts").McpConfigTarget,
+    revision: string,
+    version: string,
+  ): Promise<import("@myagent/contracts").HookConfigView> {
+    return this.request("/hooks/confirm", "POST", {
+      ...target,
+      revision,
+      version,
+    });
+  }
+  hooks(
+    sessionId: string,
+  ): Promise<import("@myagent/contracts").HookExecution[]> {
+    return this.request(`/sessions/${sessionId}/hooks`);
+  }
   constructor(
     private readonly base = "/api/v1",
     private readonly transport: typeof fetch = (...args) => fetch(...args),
   ) {}
   // HTTP 命令不自动重试。网络失败时结果可能已被服务端提交，是否重发由调用方复用 requestId 决定。
+  plugins(
+    target: McpConfigTarget,
+  ): Promise<import("@myagent/contracts").PluginView[]> {
+    return this.request(
+      `/plugins?${new URLSearchParams({ scope: target.scope, ...(target.workspaceId ? { workspaceId: target.workspaceId } : {}) })}`,
+    );
+  }
+  previewPlugin(
+    input: import("@myagent/contracts").PluginMutation,
+  ): Promise<import("@myagent/contracts").PluginJob> {
+    return this.request("/plugins/preview", "POST", input);
+  }
+  pluginJobs(
+    target: McpConfigTarget,
+  ): Promise<import("@myagent/contracts").PluginJob[]> {
+    return this.request(
+      `/plugins/jobs?${new URLSearchParams({ scope: target.scope, ...(target.workspaceId ? { workspaceId: target.workspaceId } : {}) })}`,
+    );
+  }
+  pluginJob(id: string): Promise<import("@myagent/contracts").PluginJob> {
+    return this.request(`/plugins/jobs/${encodeURIComponent(id)}`);
+  }
+  cancelPluginJob(id: string): Promise<import("@myagent/contracts").PluginJob> {
+    return this.request(
+      `/plugins/jobs/${encodeURIComponent(id)}/cancel`,
+      "POST",
+      { requestId: crypto.randomUUID() },
+    );
+  }
+  confirmPluginJob(
+    id: string,
+    input: import("@myagent/contracts").PluginConfirm,
+  ): Promise<import("@myagent/contracts").PluginView> {
+    return this.request(
+      `/plugins/jobs/${encodeURIComponent(id)}/confirm`,
+      "POST",
+      input,
+    );
+  }
+  changePlugin(
+    id: string,
+    input: import("@myagent/contracts").PluginChange,
+  ): Promise<import("@myagent/contracts").PluginView[]> {
+    return this.request(
+      `/plugins/${encodeURIComponent(id)}/change`,
+      "POST",
+      input,
+    );
+  }
   private async request<T>(
     path: string,
     method = "GET",
@@ -104,8 +391,232 @@ export class ChatClient {
     if (response.status === 204) return undefined as T;
     return response.json() as Promise<T>;
   }
+  skills(workspaceId?: string) {
+    return this.request<SkillCatalog>(
+      `/skills${workspaceId ? `?workspaceId=${encodeURIComponent(workspaceId)}` : ""}`,
+    );
+  }
+  skill(id: string, workspaceId?: string) {
+    return this.request<{
+      entry: SkillEntry;
+      body: string;
+      resources: { path: string; bytes: number }[];
+    }>(
+      `/skills/${encodeURIComponent(id)}${workspaceId ? `?workspaceId=${encodeURIComponent(workspaceId)}` : ""}`,
+    );
+  }
+  setSkillEnabled(id: string, enabled: boolean, workspaceId?: string) {
+    return this.request<{ ok: boolean }>(
+      `/skills/${encodeURIComponent(id)}`,
+      "PATCH",
+      { enabled, ...(workspaceId ? { workspaceId } : {}) },
+    );
+  }
+  addSkillSource(input: SkillSourceInput) {
+    return this.request<SkillSource>("/skill-sources", "POST", input);
+  }
+  changeSkillSource(
+    id: string,
+    input: {
+      expectedRevision: number;
+      enabled?: boolean;
+      scope?: "user" | "project";
+      workspaceId?: string;
+    },
+  ) {
+    return this.request<SkillSource>(
+      `/skill-sources/${encodeURIComponent(id)}`,
+      "PATCH",
+      input,
+    );
+  }
+  removeSkillSource(id: string) {
+    return this.request<{ ok: boolean }>(
+      `/skill-sources/${encodeURIComponent(id)}`,
+      "DELETE",
+    );
+  }
   settings() {
     return this.request<PublicSettings>("/settings");
+  }
+  memories() {
+    return this.request<MemoryOverview>("/memories");
+  }
+  syncMemories() {
+    return this.request<MemoryOverview>("/memories/sync", "POST", {});
+  }
+  saveMemorySettings(
+    input: Omit<MemorySettings, "revision" | "enabledAt"> & {
+      expectedRevision: number;
+    },
+  ) {
+    return this.request<MemorySettings>("/memories/settings", "PUT", input);
+  }
+  searchMemories(input: MemoryQuery = {}) {
+    const query = new URLSearchParams(
+      Object.entries(input)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => [k, String(v)]),
+    );
+    return this.request<MemoryPage>(`/memories/entries?${query}`);
+  }
+  readMemory(id: string, cursor?: string, sourceId?: string) {
+    const query = new URLSearchParams({
+      ...(cursor ? { cursor } : {}),
+      ...(sourceId ? { sourceId } : {}),
+    });
+    return this.request<MemoryRead>(
+      `/memories/entries/${encodeURIComponent(id)}?${query}`,
+    );
+  }
+  updateMemory(input: MemoryUpdate) {
+    return this.request<{ entry: MemoryEntry | null }>(
+      "/memories/entries",
+      "POST",
+      input,
+    );
+  }
+  undoMemory(id: string, expectedRevision: string, requestId: string) {
+    return this.request<{ ok: boolean }>("/memories/undo", "POST", {
+      id,
+      expectedRevision,
+      requestId,
+    });
+  }
+  createMemoryJob(sessionId: string, requestId: string) {
+    return this.request<MemoryJobView>("/memories/jobs", "POST", {
+      sessionId,
+      requestId,
+    });
+  }
+  cancelMemoryJob(id: string) {
+    return this.request<{ ok: boolean }>(
+      `/memories/jobs/${encodeURIComponent(id)}/cancel`,
+      "POST",
+      {},
+    );
+  }
+  retryMemoryJob(id: string) {
+    return this.request<MemoryJobView>(
+      `/memories/jobs/${encodeURIComponent(id)}/retry`,
+      "POST",
+      {},
+    );
+  }
+  sessionMemory(id: string) {
+    return this.request<SessionMemorySettings>(
+      `/sessions/${encodeURIComponent(id)}/memory`,
+    );
+  }
+  saveSessionMemory(
+    id: string,
+    input: Omit<SessionMemorySettings, "id" | "revision"> & {
+      expectedRevision: number;
+    },
+  ) {
+    return this.request<SessionMemorySettings>(
+      `/sessions/${encodeURIComponent(id)}/memory`,
+      "PUT",
+      input,
+    );
+  }
+  workspaces() {
+    return this.request<{ workspaces: Workspace[] }>("/workspaces");
+  }
+  createWorkspace(path: string, name: string) {
+    return this.request<Workspace>("/workspaces", "POST", { path, name });
+  }
+  bindWorkspace(
+    sessionId: string,
+    workspaceId: string,
+    expectedRevision: number,
+  ) {
+    return this.request<SessionSnapshot>(
+      `/sessions/${encodeURIComponent(sessionId)}/workspace`,
+      "PUT",
+      { workspaceId, expectedRevision },
+    );
+  }
+  execution(sessionId: string) {
+    return this.request<ExecutionOverview>(
+      `/sessions/${encodeURIComponent(sessionId)}/execution`,
+    );
+  }
+  decideApproval(id: string, input: ApprovalDecision) {
+    return this.request<ApprovalRequest>(
+      `/approvals/${encodeURIComponent(id)}/decision`,
+      "POST",
+      input,
+    );
+  }
+  grants(workspaceId: string) {
+    return this.request<{ grants: PermissionGrant[] }>(
+      `/workspaces/${encodeURIComponent(workspaceId)}/grants`,
+    );
+  }
+  revokeGrant(id: string) {
+    return this.request<void>(`/grants/${encodeURIComponent(id)}`, "DELETE");
+  }
+  context(sessionId: string) {
+    return this.request<ContextView | null>(
+      `/sessions/${encodeURIComponent(sessionId)}/context`,
+    );
+  }
+  history(sessionId: string, query: HistoryQuery = {}) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query))
+      if (value !== undefined) params.set(key, String(value));
+    return this.request<HistoryPage>(
+      `/sessions/${encodeURIComponent(sessionId)}/history?${params}`,
+    );
+  }
+  resume(runId: string, input: ContextResumeInput = {}) {
+    return this.request<RunAccepted>(
+      `/runs/${encodeURIComponent(runId)}/resume`,
+      "POST",
+      input,
+    );
+  }
+  resolveInvocation(
+    id: string,
+    kind: NonNullable<ToolInvocation["resolution"]>["kind"],
+    note: string,
+  ) {
+    return this.request<ToolInvocation | ExecutionConcern>(
+      `/invocations/${encodeURIComponent(id)}/resolve`,
+      "POST",
+      { kind, note },
+    );
+  }
+  result(sessionId: string, resultId: string, cursor?: string) {
+    return this.request<ResultPage>(
+      `/sessions/${encodeURIComponent(sessionId)}/results/${encodeURIComponent(resultId)}${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`,
+    );
+  }
+  connections() {
+    return this.request<{ connections: McpConnection[] }>("/mcp/connections");
+  }
+  saveConnection(input: McpConnectionInput, id?: string) {
+    return this.request<McpConnection>(
+      `/mcp/connections${id ? `/${encodeURIComponent(id)}` : ""}`,
+      id ? "PUT" : "POST",
+      input,
+    );
+  }
+  connectMcp(id: string, workspaceId: string) {
+    return this.request<{
+      ok: boolean;
+      tools: number;
+      authorizationUrl?: string;
+    }>(`/mcp/connections/${encodeURIComponent(id)}/connect`, "POST", {
+      workspaceId,
+    });
+  }
+  deleteConnection(id: string) {
+    return this.request<McpRemoval>(
+      `/mcp/connections/${encodeURIComponent(id)}`,
+      "DELETE",
+    );
   }
   saveSettings(input: SettingsInput) {
     return this.request<PublicSettings>("/settings", "PUT", input);
@@ -116,8 +627,73 @@ export class ChatClient {
   listSessions() {
     return this.request<{ sessions: Session[] }>("/sessions");
   }
-  createSession() {
-    return this.request<Session>("/sessions", "POST", {});
+  projects() {
+    return this.request<{ projects: Workspace[] }>("/projects");
+  }
+  prepareProject(path: string) {
+    return this.request<Workspace>("/projects/prepare", "POST", { path });
+  }
+  pickDirectory() {
+    return this.request<DirectorySelection>("/projects/pick", "POST", {});
+  }
+  directories(path?: string) {
+    return this.request<DirectoryListing>(
+      `/projects/directories${path ? `?path=${encodeURIComponent(path)}` : ""}`,
+    );
+  }
+  mcpOverview(workspaceId?: string) {
+    return this.request<McpOverview>(
+      `/mcp/overview${workspaceId ? `?workspaceId=${encodeURIComponent(workspaceId)}` : ""}`,
+    );
+  }
+  commandConfig(target: CommandConfigTarget) {
+    const query = new URLSearchParams({
+      scope: target.scope,
+      ...(target.workspaceId ? { workspaceId: target.workspaceId } : {}),
+    });
+    return this.request<CommandConfigView>(`/command-policy/config?${query}`);
+  }
+  saveCommandConfig(input: CommandConfigSave) {
+    return this.request<CommandConfigView>(
+      "/command-policy/config",
+      "PUT",
+      input,
+    );
+  }
+  confirmCommandConfig(input: CommandConfigConfirmation) {
+    return this.request<CommandConfigView>(
+      "/command-policy/config/confirm",
+      "POST",
+      input,
+    );
+  }
+  evaluateCommand(input: CommandEvaluationInput) {
+    return this.request<CommandAssessment>(
+      "/command-policy/evaluate",
+      "POST",
+      input,
+    );
+  }
+  mcpConfig(target: McpConfigTarget) {
+    return this.request<McpConfigView>(
+      `/mcp/config?scope=${target.scope}${target.workspaceId ? `&workspaceId=${encodeURIComponent(target.workspaceId)}` : ""}`,
+    );
+  }
+  saveMcpConfig(input: McpConfigSave) {
+    return this.request<McpConfigView>("/mcp/config", "PUT", input);
+  }
+  confirmMcpConfig(input: McpConfigConfirmation) {
+    return this.request<McpConfigView>("/mcp/config/confirm", "POST", input);
+  }
+  reconnectMcp(id: string, workspaceId: string) {
+    return this.request<McpLiveState>(
+      `/mcp/servers/${encodeURIComponent(id)}/reconnect`,
+      "POST",
+      { workspaceId },
+    );
+  }
+  createSession(input: CreateSessionInput = {}) {
+    return this.request<Session>("/sessions", "POST", input);
   }
   session(id: string) {
     return this.request<SessionSnapshot>(`/sessions/${encodeURIComponent(id)}`);

@@ -2,15 +2,15 @@
  * 后部媒体查询负责窄屏抽屉和可访问性；仅改变展示，不决定运行状态。 */
 :root {
   font-family:
-    "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Microsoft YaHei", sans-serif;
-  color: #25332c;
+  color: #303030;
   background: #fff;
   font-synthesis: none;
   font-weight: 400;
-  --green: #347758;
-  --muted: #858f88;
-  --line: #e7ece8;
+  --accent: #252525;
+  --muted: #8c8c8c;
+  --line: #ebebeb;
 }
 * {
   box-sizing: border-box;
@@ -37,7 +37,7 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid #68a383;
+  outline: 2px solid #949494;
   outline-offset: 3px;
 }
 button svg {
@@ -47,7 +47,7 @@ button {
   transition: background 0.15s;
 }
 a {
-  color: var(--green);
+  color: var(--accent);
 }
 /* 主布局：侧栏固定宽度，中央工作区占据剩余空间。 */
 .app-shell {
@@ -56,29 +56,30 @@ a {
   overflow: hidden;
 }
 .sidebar {
-  width: 266px;
+  width: 246px;
   flex-shrink: 0;
-  background: #f6f8f5;
-  border-right: 1px solid var(--line);
+  background: #f7f7f8;
+  border-right: 1px solid #ededed;
   display: flex;
   flex-direction: column;
-  padding: 30px 18px 18px;
+  padding: 18px 12px 12px;
 }
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 10px 30px;
+  gap: 9px;
+  padding: 0 10px 18px;
 }
 .brand strong {
-  font-size: 21px;
-  letter-spacing: -0.8px;
+  font-size: 15px;
+  letter-spacing: -0.4px;
+  font-weight: 600;
 }
 .brand-symbol {
   font-size: 31px;
   line-height: 32px;
   font-weight: 700;
-  color: var(--green);
+  color: var(--accent);
   position: relative;
   letter-spacing: -3px;
   width: 30px;
@@ -88,17 +89,17 @@ a {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #8cbd9e;
+  background: #b0b0b0;
   top: 1px;
   right: 2px;
 }
 .local-tag {
   font-size: 9px;
   letter-spacing: 1px;
-  border: 1px solid #d4dfd4;
+  border: 1px solid #dcdcdc;
   padding: 3px 5px;
   border-radius: 4px;
-  color: #738577;
+  color: #808080;
   margin-left: auto;
 }
 .new-chat {
@@ -106,27 +107,27 @@ a {
   display: flex;
   align-items: center;
   gap: 9px;
-  background: #fff;
-  border: 1px solid #dce6dd;
-  border-radius: 9px;
-  padding: 12px 13px;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  padding: 10px;
   font-size: 13px;
-  box-shadow: 0 2px 4px #243c2410;
+  text-align: left;
 }
 .new-chat:hover {
-  background: #ecf3ed;
+  background: #f1f1f1;
 }
 .new-chat > span {
   margin-left: auto;
-  color: #98a29a;
+  color: #9f9f9f;
 }
 .sidebar-label {
   display: flex;
   justify-content: space-between;
-  padding: 31px 12px 12px;
-  color: #8d988f;
+  align-items: center;
+  padding: 20px 10px 6px;
+  color: #777;
   font-size: 11px;
-  letter-spacing: 0.8px;
 }
 .session-list {
   overflow-y: auto;
@@ -135,16 +136,16 @@ a {
 .session-row {
   display: flex;
   align-items: center;
-  min-height: 43px;
-  margin: 3px 0;
+  min-height: 34px;
+  margin: 2px 0;
   border-radius: 7px;
 }
 .session-row:hover {
-  background: #edf1ec;
+  background: #f0f0f0;
 }
 .session-row.selected {
-  background: #e5eee5;
-  color: #295c40;
+  background: #ebebeb;
+  color: #4f4f4f;
 }
 .session-select {
   flex: 1;
@@ -154,7 +155,7 @@ a {
   gap: 10px;
   background: none;
   border: 0;
-  padding: 11px;
+  padding: 9px 10px;
   font-size: 12px;
   text-align: left;
 }
@@ -176,44 +177,43 @@ a {
 .sidebar-empty {
   font-size: 12px;
   line-height: 1.9;
-  color: #99a199;
+  color: #9f9f9f;
   padding: 6px 12px;
 }
 .sidebar-bottom {
-  border-top: 1px solid var(--line);
-  padding-top: 15px;
-  margin-top: 14px;
+  padding-top: 8px;
+  margin-top: 10px;
 }
 .settings-link {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
   width: 100%;
   border: 0;
   background: none;
-  padding: 12px;
-  font-size: 13px;
+  padding: 9px 10px;
+  font-size: 12px;
   border-radius: 7px;
 }
 .settings-link:hover {
-  background: #e8eee7;
+  background: #ececec;
 }
 .status-light {
   height: 6px;
   width: 6px;
   border-radius: 50%;
-  background: #bac2bb;
+  background: #c0c0c0;
   margin-left: auto;
 }
 .status-light.ready {
-  background: #559b70;
+  background: #898989;
 }
 .privacy {
   display: flex;
   gap: 7px;
   align-items: center;
   font-size: 10px;
-  color: #919c92;
+  color: #999999;
   padding: 14px 12px 3px;
 }
 .workspace {
@@ -227,9 +227,8 @@ a {
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  height: 76px;
-  padding: 0 38px;
-  border-bottom: 1px solid #f3f5f2;
+  height: 56px;
+  padding: 0 26px;
 }
 .header-left {
   display: flex;
@@ -251,24 +250,24 @@ a {
   white-space: nowrap;
 }
 .model-selector svg {
-  color: #8c978f;
+  color: #949494;
 }
 .workspace-badge {
   display: flex;
-  gap: 7px;
+  gap: 6px;
   align-items: center;
-  border: 1px solid #e6ebe5;
-  border-radius: 20px;
-  padding: 7px 10px;
-  font-size: 10px;
-  color: #879386;
+  font-size: 12px;
+  color: #777;
+  max-width: 38%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .workspace-badge > span {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #79a184;
+  background: #969696;
 }
 /* 消息滚动容器与输入区分开，流式追加时由 App 决定是否追尾。 */
 .conversation {
@@ -277,12 +276,11 @@ a {
   min-height: 0;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: #dce3dc transparent;
+  scrollbar-color: #e1e1e1 transparent;
 }
 .welcome {
-  max-width: 670px;
-  margin: 0 auto;
-  padding: clamp(36px, 10vh, 110px) 28px 30px;
+  margin: auto;
+  padding: 28px 24px;
   text-align: center;
 }
 .welcome-mark {
@@ -290,10 +288,10 @@ a {
   height: 60px;
   border-radius: 19px;
   margin: 0 auto 28px;
-  background: #edf4ec;
+  background: #f2f2f2;
   display: grid;
   place-items: center;
-  color: #4d8c63;
+  color: #7c7c7c;
   transform: rotate(-5deg);
 }
 .welcome-mark svg {
@@ -302,59 +300,58 @@ a {
 .eyebrow {
   font-size: 9px;
   letter-spacing: 2.1px;
-  color: #9ca89b;
+  color: #a5a5a5;
   font-weight: 500;
 }
 .welcome h1 {
-  font-size: 32px;
-  letter-spacing: 1px;
+  font-size: 26px;
+  letter-spacing: -0.6px;
   font-weight: 600;
-  margin: 19px 0 17px;
+  margin: 18px 0 10px;
 }
 .welcome-description {
-  color: #8a938c;
-  line-height: 1.95;
-  font-size: 13px;
+  color: #777;
+  line-height: 1.6;
+  font-size: 17px;
+  margin: 0;
 }
 .suggestions {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  max-width: 416px;
-  margin: 31px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
 }
 .suggestions button {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   text-align: left;
-  gap: 13px;
+  gap: 10px;
   background: #fff;
-  border: 1px solid #e9ede7;
-  border-radius: 9px;
-  padding: 15px 17px;
+  border: 1px solid #ededed;
+  border-radius: 12px;
+  padding: 14px;
   font-size: 12px;
-  color: #657267;
+  line-height: 1.6;
+  color: #444;
 }
 .suggestions :where(button) > span {
-  color: #a9b5a6;
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: inherit;
 }
 .suggestions :where(button) > svg {
-  margin-left: auto;
-  transform: rotate(45deg);
-  color: #a5b3a3;
+  color: #707070;
 }
 .suggestions button:hover {
-  background: #f6f9f4;
-  border-color: #b8ceb8;
+  background: #f8f8f8;
+  border-color: #c8c8c8;
 }
 .setup-prompt {
   margin-top: 22px;
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  color: var(--green);
+  color: var(--accent);
   border: 0;
   background: none;
   font-size: 11px;
@@ -366,21 +363,21 @@ a {
 .composer-area {
   position: relative;
   width: 100%;
-  max-width: 830px;
-  padding: 17px 32px 20px;
+  max-width: 850px;
+  padding: 12px 32px 18px;
   margin: 0 auto;
   flex-shrink: 0;
 }
 .composer {
   background: #fff;
-  border: 1px solid #d9e3d8;
-  border-radius: 15px;
-  padding: 18px 18px 11px;
-  box-shadow: 0 3px 18px #304b3710;
+  border: 1px solid #dedede;
+  border-radius: 20px;
+  padding: 16px 16px 12px;
+  box-shadow: 0 2px 8px #00000006;
 }
 .composer:focus-within {
-  border-color: #9fbba3;
-  box-shadow: 0 3px 20px #304b3717;
+  border-color: #b7b7b7;
+  box-shadow: 0 2px 10px #0000000a;
 }
 .composer textarea {
   width: 100%;
@@ -391,46 +388,48 @@ a {
   max-height: 180px;
   min-height: 29px;
   font-size: 14px;
-  color: #354438;
+  color: #404040;
   background: transparent;
 }
 .composer textarea::placeholder {
-  color: #a5aca5;
+  color: #aaaaaa;
 }
 .composer-bottom {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 11px;
+  gap: 12px;
+  margin-top: 16px;
 }
 .composer-hint {
+  margin-left: auto;
   font-size: 10px;
-  color: #a6afa5;
+  color: #999;
 }
 .send-button {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
   border: 0;
-  border-radius: 9px;
-  background: #377553;
+  border-radius: 50%;
+  background: #222;
   display: grid;
   place-items: center;
   color: white;
 }
 .send-button:disabled {
-  background: #c5d5c2;
+  background: #e7e7e7;
   opacity: 1;
-  color: #fff;
+  color: #aaa;
 }
 .send-button:hover:not(:disabled) {
-  background: #265b3e;
+  background: #444;
 }
 .composer-footnote {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 9px;
-  color: #a4ada2;
+  color: #aaaaaa;
   margin: 13px 5px 0;
   gap: 8px;
 }
@@ -449,38 +448,12 @@ a {
   gap: 15px;
   padding: 20px 0;
 }
-.message-avatar {
-  width: 29px;
-  height: 29px;
-  border-radius: 8px;
-  background: #edf4ec;
-  color: #4b825b;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  font-weight: 600;
-  font-size: 20px;
-}
-.message.user .message-avatar {
-  font-size: 11px;
-  background: #eeefed;
-  color: #808b7d;
-}
 .message-body {
   flex: 1;
   min-width: 0;
   padding-top: 3px;
   font-size: 14px;
   line-height: 1.85;
-}
-.message-author {
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  line-height: 23px;
-  margin-bottom: 10px;
 }
 .user-text {
   white-space: pre-wrap;
@@ -513,10 +486,10 @@ a {
   padding-left: 1.6em;
 }
 .markdown blockquote {
-  border-left: 3px solid #bcd0bc;
+  border-left: 3px solid #cacaca;
   margin: 16px 0;
   padding: 0 15px;
-  color: #7d897e;
+  color: #868686;
 }
 .markdown table {
   border-collapse: collapse;
@@ -528,35 +501,35 @@ a {
 }
 .markdown th,
 .markdown td {
-  border: 1px solid #dfe6dc;
+  border: 1px solid #e4e4e4;
   padding: 8px 13px;
   text-align: left;
 }
 .markdown th {
-  background: #f4f7f1;
+  background: #f6f6f6;
 }
 .markdown code {
   font-size: 12px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  background: #f0f4ed;
+  background: #f3f3f3;
   border-radius: 4px;
   padding: 2px 5px;
 }
 .code-block {
-  border: 1px solid #e0e6de;
+  border: 1px solid #e4e4e4;
   border-radius: 9px;
   overflow: hidden;
   margin: 16px 0;
-  background: #f8faf7;
+  background: #f9f9f9;
 }
 .code-block > div {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #eff3ec;
+  background: #f2f2f2;
   padding: 7px 12px;
   font-size: 10px;
-  color: #808d7d;
+  color: #898989;
 }
 .code-block pre {
   overflow: auto;
@@ -573,7 +546,7 @@ a {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 14px;
 }
 .copy-button {
   display: inline-flex;
@@ -581,17 +554,17 @@ a {
   gap: 5px;
   border: 0;
   background: none;
-  color: #96a091;
+  color: #9d9d9d;
   font-size: 10px;
   padding: 4px 0;
 }
 .copy-button:hover {
-  color: #376b42;
+  color: #5d5d5d;
 }
 .generating-label {
   font-size: 10px;
   font-weight: 400;
-  color: #8da488;
+  color: #9d9d9d;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -600,7 +573,7 @@ a {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #7cac71;
+  background: #9e9e9e;
 }
 .thinking-dots {
   display: flex;
@@ -610,7 +583,7 @@ a {
 .thinking-dots span {
   height: 5px;
   width: 5px;
-  background: #99b293;
+  background: #aaaaaa;
   border-radius: 50%;
   animation: pulse 1s infinite;
 }
@@ -622,7 +595,7 @@ a {
 }
 .message-status,
 .context-note {
-  color: #8d9689;
+  color: #939393;
   font-size: 11px;
 }
 .context-note {
@@ -660,7 +633,7 @@ a {
   gap: 10px;
   justify-content: center;
   padding: 100px 20px;
-  color: #91a08b;
+  color: #9b9b9b;
   font-size: 13px;
 }
 .icon-button {
@@ -672,11 +645,11 @@ a {
   background: none;
   width: 32px;
   height: 32px;
-  color: #8a9587;
+  color: #929292;
 }
 .icon-button:hover {
-  background: #e5ece1;
-  color: #486841;
+  background: #eaeaea;
+  color: #5e5e5e;
 }
 .session-actions .icon-button {
   width: 24px;
@@ -686,17 +659,17 @@ a {
   position: absolute;
   top: -37px;
   left: calc(50% - 17px);
-  border: 1px solid #dfe6dc;
+  border: 1px solid #e4e4e4;
   background: #fff;
   border-radius: 50%;
-  box-shadow: 0 2px 8px #25382512;
+  box-shadow: 0 2px 8px #33333312;
 }
 .connection-note {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #8b967f;
+  color: #929292;
   margin-bottom: 10px;
 }
 .notice {
@@ -710,8 +683,8 @@ a {
   color: #a25545;
 }
 .notice.success {
-  background: #edf6e9;
-  color: #467c38;
+  background: #f3f3f3;
+  color: #6c6c6c;
 }
 .composer-error {
   display: flex;
@@ -720,18 +693,18 @@ a {
   margin-bottom: 10px;
 }
 .modal {
-  border: 1px solid #e3e8e0;
+  border: 1px solid #e6e6e6;
   border-radius: 18px;
   padding: 28px;
   width: calc(100% - 36px);
   max-width: 510px;
-  color: #35412f;
+  color: #3d3d3d;
   max-height: calc(100dvh - 40px);
   overflow: auto;
-  box-shadow: 0 18px 90px #21382224;
+  box-shadow: 0 18px 90px #32323224;
 }
 .modal::backdrop {
-  background: #26342566;
+  background: #30303066;
   backdrop-filter: blur(3px);
 }
 .modal-header {
@@ -749,7 +722,7 @@ a {
 .modal p {
   font-size: 13px;
   line-height: 1.8;
-  color: #7b8875;
+  color: #848484;
 }
 .modal label {
   display: block;
@@ -761,12 +734,12 @@ a {
 .modal textarea {
   display: block;
   width: 100%;
-  border: 1px solid #dae2d6;
+  border: 1px solid #dfdfdf;
   border-radius: 8px;
   padding: 11px 12px;
   font-size: 13px;
-  background: #fcfdfb;
-  color: #3c4c35;
+  background: #fdfdfd;
+  color: #474747;
   outline: none;
   margin-top: 8px;
 }
@@ -776,11 +749,11 @@ a {
 }
 .modal input:focus,
 .modal textarea:focus {
-  border-color: #94b18a;
+  border-color: #a8a8a8;
 }
 .field-help {
   font-size: 10px;
-  color: #96a08f;
+  color: #9d9d9d;
   line-height: 1.7;
   margin-top: 6px;
 }
@@ -801,15 +774,15 @@ a {
   border: 1px solid transparent;
 }
 .button.primary {
-  background: #3b784e;
+  background: #262626;
   color: white;
 }
 .button.secondary {
   background: #fff;
-  border-color: #dbe3d6;
+  border-color: #e0e0e0;
 }
 .button.secondary:hover {
-  background: #f3f7f0;
+  background: #f6f6f6;
 }
 .button.danger-button {
   background: #a95240;
@@ -820,14 +793,14 @@ a {
   align-items: center;
   gap: 8px;
   font-size: 11px;
-  color: #7d9274;
+  color: #8b8b8b;
 }
 .key-state button {
   margin-left: auto;
 }
 .settings-intro {
-  background: #f2f7ee;
-  border: 1px solid #e2eadc;
+  background: #f5f5f5;
+  border: 1px solid #e7e7e7;
   padding: 12px;
   border-radius: 9px;
 }
@@ -835,7 +808,7 @@ a {
   margin-top: 18px;
 }
 .muted {
-  color: #929c8d;
+  color: #999999;
 }
 .mobile-only {
   display: none;
@@ -874,10 +847,12 @@ a {
     inset: 0 auto 0 0;
     z-index: 20;
     transform: translateX(-100%);
+    visibility: hidden;
     transition: transform 0.2s;
     width: 280px;
   }
   .sidebar.open {
+    visibility: visible;
     transform: translateX(0);
   }
   .sidebar-shade {
@@ -885,7 +860,7 @@ a {
     position: fixed;
     inset: 0;
     z-index: 19;
-    background: #273b2655;
+    background: #35353555;
     border: 0;
   }
   .mobile-only {
@@ -935,10 +910,6 @@ a {
   }
   .message-body {
     font-size: 14px;
-  }
-  .message-avatar {
-    width: 26px;
-    height: 26px;
   }
   .session-actions {
     opacity: 1;
@@ -998,12 +969,12 @@ a {
 .settings-banner {
   display: flex;
   gap: 12px;
-  background: #f0f6ec;
-  border: 1px solid #e2ebdc;
+  background: #f4f4f4;
+  border: 1px solid #e8e8e8;
   border-radius: 9px;
   padding: 13px;
   margin: 18px 0;
-  color: #6c8e5e;
+  color: #838383;
 }
 .settings-banner svg {
   flex-shrink: 0;
@@ -1018,19 +989,19 @@ a {
   display: block;
   font-size: 10px;
   line-height: 1.8;
-  color: #8b9c80;
+  color: #969696;
   margin-top: 4px;
 }
 .modal .field-hint {
   font-size: 10px;
   line-height: 1.7;
-  color: #99a390;
+  color: #a0a0a0;
   margin: 7px 0 0;
 }
 .optional {
   font-size: 10px;
   font-weight: 400;
-  color: #a1aa9a;
+  color: #a7a7a7;
   margin-left: 5px;
 }
 .input-with-action {
@@ -1063,20 +1034,20 @@ a {
 }
 /* 高亮代码的独立滚动区与复制工具栏，复制逻辑从 pre 读取纯文字。 */
 .code-frame {
-  border: 1px solid #e0e6de;
+  border: 1px solid #e4e4e4;
   border-radius: 9px;
   overflow: hidden;
   margin: 16px 0;
-  background: #f8faf7;
+  background: #f9f9f9;
 }
 .code-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #eff3ec;
+  background: #f2f2f2;
   padding: 7px 12px;
   font-size: 10px;
-  color: #808d7d;
+  color: #898989;
 }
 .code-frame pre {
   overflow: auto;
@@ -1107,8 +1078,8 @@ fieldset select {
 }
 .run-plan {
   padding: 14px 16px;
-  background: #f4f8f7;
-  border: 1px solid #dce7e2;
+  background: #f7f7f7;
+  border: 1px solid #e4e4e4;
   border-radius: 10px;
   margin-bottom: 12px;
 }
@@ -1126,26 +1097,24 @@ fieldset select {
 .run-plan li span {
   width: 16px;
   flex-shrink: 0;
-  color: #277763;
+  color: #656565;
 }
 .run-plan li[data-status="completed"] {
-  color: #677970;
+  color: #757575;
 }
 .run-plan small {
-  color: #64756f;
+  color: #717171;
 }
-.execution-details > summary {
-  color: #61716a;
+.execution-overview {
+  color: #6d6d6d;
   cursor: pointer;
   padding: 7px 0;
 }
 .execution-step {
-  border-left: 2px solid #e0e6e2;
-  padding-left: 12px;
-  margin-top: 8px;
+  margin: 16px 0;
 }
 .tool-call {
-  border: 1px solid #e2e7e4;
+  border: 1px solid #e6e6e6;
   border-radius: 7px;
   margin: 7px 0;
   padding: 9px 12px;
@@ -1156,7 +1125,7 @@ fieldset select {
 }
 .tool-call summary span {
   margin-left: 12px;
-  color: #587167;
+  color: #6b6b6b;
 }
 .tool-call pre {
   white-space: pre-wrap;
@@ -1165,6 +1134,1610 @@ fieldset select {
   overflow: auto;
   font-size: 12px;
   padding: 9px;
-  background: #f5f7f6;
+  background: #f7f7f7;
   border-radius: 5px;
+}
+
+/* 工具管理和批准面板：在现有浅色工作台上扩展，长路径换行，窄屏按钮保持可操作。 */
+.modal.wide {
+  max-width: 820px;
+}
+.tool-settings section {
+  padding: 16px 0;
+  border-bottom: 1px solid #e6e6e6;
+}
+.tool-settings h3 {
+  margin: 0 0 12px;
+}
+.tool-settings details {
+  margin: 14px 0;
+}
+.tool-settings summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.tool-settings select,
+.execution-panel select,
+.modal select {
+  width: 100%;
+  margin: 6px 0 14px;
+  padding: 10px 12px;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  color: inherit;
+  background: #fff;
+  font: inherit;
+}
+.connection-row,
+.grant-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #efefef;
+}
+.connection-row small,
+.grant-row small {
+  display: block;
+  margin-top: 5px;
+  color: #777777;
+  overflow-wrap: anywhere;
+}
+.inline-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.inline-actions button,
+.grant-row button {
+  border: 1px solid #e1e1e1;
+  background: #fff;
+  border-radius: 7px;
+  padding: 7px 12px;
+  color: inherit;
+  cursor: pointer;
+}
+.tool-settings .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tool-settings .checkbox-label input {
+  width: auto;
+  margin: 0;
+}
+.tool-settings fieldset {
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+.execution-panel {
+  max-width: 780px;
+  margin: 12px auto 24px;
+  padding: 0 24px;
+}
+.execution-panel section {
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  background: #f7f7f7;
+  padding: 18px;
+  margin: 12px 0;
+}
+.execution-panel .unknown-card {
+  background: #fff7e9;
+  border-color: #e8d3ad;
+}
+.execution-panel p {
+  line-height: 1.7;
+}
+.execution-panel li {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.execution-panel pre,
+.full-result {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #f5f5f5;
+  padding: 12px;
+  max-height: 55vh;
+  overflow: auto;
+}
+@media (max-width: 600px) {
+  .connection-row,
+  .grant-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .execution-panel {
+    padding: 0 14px;
+  }
+}
+
+/* 项目入口和 MCP 管理：沿用浅色工作台，长路径/Schema 在卡片内换行，避免撑开窄屏。 */
+.project-selector {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #666;
+  font-size: 12px;
+}
+.project-path {
+  display: block;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.directory-list {
+  display: grid;
+  gap: 0.3rem;
+  max-height: 240px;
+  overflow: auto;
+  margin: 0.7rem 0;
+}
+.directory-list button {
+  text-align: left;
+  border: 0;
+  padding: 0.6rem;
+  background: #f6f6f6;
+  border-radius: 6px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.directory-list small {
+  display: block;
+  color: #757575;
+  margin-top: 0.2rem;
+}
+.project-path-form {
+  margin-top: 1rem;
+}
+.mcp-toolbar,
+.mcp-tabs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.mcp-toolbar {
+  justify-content: space-between;
+  margin: 1rem 0;
+}
+.mcp-tabs button {
+  background: transparent;
+  border: 0;
+  padding: 0.6rem;
+  cursor: pointer;
+  color: #808080;
+  border-bottom: 2px solid transparent;
+}
+.mcp-tabs button.selected {
+  color: #5b5b5b;
+  border-bottom-color: #5b5b5b;
+}
+.mcp-config-source {
+  border: 1px solid #e7e7e7;
+  border-radius: 9px;
+  padding: 0.8rem;
+  margin: 0.6rem 0;
+}
+.mcp-config-source > code {
+  display: block;
+  overflow-wrap: anywhere;
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: #7d7d7d;
+}
+.mcp-list {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.mcp-server {
+  border: 1px solid #e4e4e4;
+  border-radius: 10px;
+  padding: 0.8rem;
+  background: #fbfbfb;
+}
+.mcp-server > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+.mcp-server > summary > strong {
+  margin-right: auto;
+  overflow-wrap: anywhere;
+}
+.mcp-scope,
+.mcp-state {
+  font-size: 0.76rem;
+  color: #858585;
+}
+.mcp-state {
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+  background: #efefef;
+}
+.mcp-state.connected {
+  color: #585858;
+  background: #ececec;
+}
+.mcp-state.error {
+  color: #b04535;
+  background: #f7e9e4;
+}
+.mcp-state.pending,
+.mcp-state.authorization_required {
+  color: #8a631d;
+  background: #f7efd9;
+}
+.mcp-server .mcp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  font-size: 0.8rem;
+}
+.mcp-server .mcp-toggle input {
+  width: auto;
+}
+.mcp-server > code {
+  margin: 1rem 0;
+}
+.mcp-tool {
+  border-top: 1px solid #e4e4e4;
+  padding: 0.6rem 0;
+}
+.mcp-tool summary {
+  display: flex;
+  gap: 0.6rem;
+  cursor: pointer;
+  align-items: center;
+}
+.mcp-tool summary span {
+  color: #858585;
+  font-size: 0.75rem;
+}
+.mcp-server pre,
+.mcp-config-source pre,
+.grant-row pre {
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 0.7rem;
+  background: #f2f2f2;
+  border-radius: 6px;
+  font-size: 0.78rem;
+}
+.mcp-editor {
+  padding: 1rem;
+  border: 1px solid #bdbdbd;
+  border-radius: 10px;
+  margin-top: 1rem;
+  background: #fafafa;
+}
+.mcp-editor .json-editor {
+  min-height: 260px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+}
+.mcp-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #858585;
+}
+.grant-row {
+  border-top: 1px solid #e4e4e4;
+  margin-top: 1rem;
+  padding-top: 0.7rem;
+}
+@media (max-width: 640px) {
+  .mcp-server > summary {
+    gap: 0.4rem;
+  }
+  .mcp-server > summary > strong {
+    flex-basis: 100%;
+  }
+  .mcp-toolbar {
+    align-items: stretch;
+  }
+}
+
+/* 筛选按钮组使用语义化 fieldset，隐藏默认边框而保留键盘与读屏语义。 */
+fieldset.mcp-tabs {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/* 命令权限设置：长命令保持可阅读，窄屏表单按列收拢；样式不携带执行状态。 */
+.command-targets {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+}
+.command-rule {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border, #ddd);
+}
+.command-rule pre,
+.command-approval pre,
+.command-path {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.command-json {
+  font-family: monospace;
+}
+.command-preview {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border, #ddd);
+}
+.command-assessment {
+  padding: 12px;
+  background: var(--bg, #f6f6f6);
+  border-radius: 8px;
+}
+@media (max-width: 640px) {
+  .command-targets {
+    grid-template-columns: 1fr;
+  }
+  .command-rule {
+    flex-direction: column;
+  }
+}
+
+/* 上下文状态与历史查看保持在输入区上方；长来源和正文换行，不挤出移动端画布。 */
+.context-panel {
+  margin-bottom: 10px;
+  color: var(--muted, #686868);
+  font-size: 12px;
+  max-height: 300px;
+  overflow: auto;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+}
+.context-panel summary {
+  cursor: pointer;
+  padding: 4px 0;
+}
+.context-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.context-breakdown dd {
+  margin: 0;
+}
+.context-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+}
+.context-sources,
+.context-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.context-actions small {
+  width: 100%;
+}
+.context-panel button {
+  padding: 5px 9px;
+  border: 1px solid #d7d7d7;
+  border-radius: 6px;
+  background: white;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Codex 风格工作台：紧凑导航、任务入口与输入区模型菜单；不展示尚未实现的功能。 */
+.thread-title {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.brand .desktop-collapse {
+  margin-left: auto;
+}
+.sidebar-label .icon-button {
+  width: 22px;
+  height: 22px;
+}
+.empty-workspace .conversation {
+  display: flex;
+  flex-direction: column;
+}
+.composer-model {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  padding: 5px 0;
+  font-size: 11px;
+  max-width: 65%;
+  min-width: 0;
+}
+.composer-bottom .composer-model span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.composer-model:hover {
+  color: #000;
+}
+.project-control {
+  position: relative;
+  margin-bottom: 7px;
+}
+.project-control .project-selector span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-selector:hover,
+.project-selector[aria-expanded="true"] {
+  background: #f2f2f2;
+}
+.directory-list button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.status-light.ready {
+  background: #418b57;
+}
+@media (min-width: 761px) {
+  .sidebar-collapsed .sidebar {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .desktop-collapse,
+  .desktop-expand {
+    display: none;
+  }
+  .suggestions {
+    margin: 0 0 12px;
+    gap: 7px;
+  }
+  .suggestions button {
+    font-size: 11px;
+    padding: 10px;
+  }
+  .composer-hint {
+    display: none;
+  }
+  .composer-model {
+    margin-right: auto;
+  }
+  .workspace-header {
+    height: 50px;
+  }
+  .composer {
+    border-radius: 17px;
+  }
+}
+@media (max-height: 480px) {
+  .empty-workspace .welcome {
+    padding: 10px;
+  }
+  .empty-workspace .welcome > svg {
+    display: none;
+  }
+  .suggestions {
+    display: none;
+  }
+}
+
+/* 参考本机 Qoder 的项目树和对话层次；分组仅是展示，不改变工作区身份与执行边界。 */
+.project-navigation {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 0 12px;
+}
+.project-group {
+  margin-bottom: 14px;
+}
+.project-heading {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.project-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 8px 2px;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  text-align: left;
+}
+.project-toggle > svg {
+  flex-shrink: 0;
+  color: #777;
+}
+.project-toggle .collapsed {
+  transform: rotate(-90deg);
+}
+.project-heading .project-toggle > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-toggle > small {
+  margin-left: auto;
+  color: #999;
+  font-size: 10px;
+}
+.project-new {
+  width: 26px;
+  height: 26px;
+  color: #777;
+}
+.project-sessions {
+  padding-left: 23px;
+}
+.project-empty {
+  color: #999;
+  font-size: 11px;
+  margin: 6px 9px;
+}
+.project-sessions .session-row {
+  position: relative;
+}
+.project-sessions .session-select {
+  padding: 9px 8px;
+}
+/* 悬停操作浮在行末，不为隐藏按钮永久挤占标题；键盘焦点同样可见。 */
+.project-group .project-sessions .session-actions {
+  display: none;
+  position: absolute;
+  right: 0;
+  border-radius: 6px;
+  background: #f0f0f0;
+}
+.project-sessions .selected .session-actions {
+  background: #ebebeb;
+}
+.project-sessions .session-row:hover .session-actions,
+.project-sessions .session-row:focus-within .session-actions {
+  display: flex;
+  opacity: 1;
+}
+.project-sessions .session-row:hover .session-select,
+.project-sessions .session-row:focus-within .session-select {
+  padding-right: 64px;
+}
+/* 用户气泡靠右，助手内容占整列；正文和执行批次共同组成真实步骤时间线。 */
+.message-list {
+  max-width: 850px;
+  padding-top: 28px;
+}
+.message {
+  display: block;
+  padding: 14px 0 24px;
+}
+.message-body {
+  font-size: 14px;
+  line-height: 1.85;
+  padding-top: 0;
+}
+.message.user {
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: 12px;
+}
+.message.user .message-body {
+  flex: 0 1 auto;
+  max-width: 88%;
+}
+.user-text {
+  background: #f3f3f3;
+  border-radius: 16px 16px 4px 16px;
+  padding: 12px 17px;
+}
+.message.user .message-tools {
+  justify-content: flex-end;
+  margin-top: 5px;
+  gap: 9px;
+}
+.message-tools time {
+  color: #9a9a9a;
+  font-size: 10px;
+}
+.message-tools .copy-button {
+  min-height: 28px;
+  font-size: 11px;
+}
+.message-tools .copy-button:first-of-type {
+  min-width: 24px;
+  justify-content: center;
+}
+.generating-label {
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #777;
+}
+.execution-overview {
+  color: #999;
+  font-size: 11px;
+  margin: 0 0 12px;
+  padding: 0;
+}
+.tool-batch {
+  margin: 14px 0 18px;
+}
+.tool-batch > summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  list-style: none;
+  cursor: pointer;
+  padding: 7px 0;
+  color: #888;
+  font-size: 12px;
+}
+.tool-batch > summary::-webkit-details-marker {
+  display: none;
+}
+.tool-batch > summary > svg {
+  flex-shrink: 0;
+}
+.tool-batch[open] > summary > svg {
+  transform: rotate(90deg);
+}
+.tool-batch > summary > span:first-of-type {
+  flex-shrink: 0;
+}
+.tool-batch-names {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: #a2a2a2;
+}
+.tool-batch-status {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 11px;
+}
+.tool-call {
+  margin-left: 7px;
+  border: 0;
+  border-left: 1px solid #dedede;
+  border-radius: 0;
+}
+.tool-call summary {
+  font-size: 12px;
+}
+.tool-call [data-status="failed"],
+.tool-call [data-status="unknown"] {
+  color: #ad4c36;
+}
+.run-plan {
+  font-size: 12px;
+  padding: 12px 14px;
+  border: 0;
+  background: #f7f7f7;
+}
+.composer {
+  border-radius: 16px;
+}
+.composer-hint {
+  order: -1;
+  margin-left: 0;
+  margin-right: auto;
+}
+.composer-model {
+  margin-left: auto;
+}
+.composer-area > .project-control {
+  margin: 8px 0 0;
+}
+.composer-footnote {
+  margin-top: 5px;
+}
+.context-panel {
+  background: transparent;
+  padding: 3px 0;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+.context-panel > details[open] {
+  background: #f7f7f7;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+@media (max-width: 760px) {
+  .message.user .message-body {
+    max-width: 94%;
+  }
+  .project-group .project-sessions .session-actions {
+    position: static;
+    display: flex;
+    opacity: 1;
+    background: transparent;
+  }
+  .project-sessions .session-row .session-select {
+    padding-right: 8px;
+  }
+  .project-sessions .session-actions .icon-button {
+    width: 29px;
+    height: 32px;
+  }
+  .tool-batch-names {
+    display: none;
+  }
+}
+
+/* 图标按钮仍向读屏提供中文名称，复制成功/失败会重新显示文字反馈。 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+/* 长期记忆管理沿用工作台中性配色；长路径、来源正文与窄屏工具栏均可换行，避免挤出弹窗。 */
+.memory-section {
+  border-top: 1px solid var(--border, #e5e7eb);
+  margin-top: 20px;
+  padding-top: 18px;
+}
+.memory-toggles,
+.memory-toolbar,
+.memory-fields {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 12px 0;
+}
+.memory-toggles label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.memory-toggles input {
+  width: auto;
+}
+.memory-toolbar input {
+  flex: 1;
+  min-width: 160px;
+}
+.memory-toolbar select {
+  max-width: 100%;
+}
+.memory-fields label {
+  flex: 1;
+  min-width: 140px;
+}
+.memory-path {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  color: #737373;
+}
+.memory-list {
+  display: grid;
+  gap: 10px;
+}
+.memory-card {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+.memory-card-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.memory-card-heading span,
+.memory-card small {
+  color: #737373;
+  font-size: 12px;
+}
+.memory-card p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.memory-card button {
+  margin-left: 12px;
+}
+.memory-editor {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  background: #fafafa;
+  border-radius: 12px;
+  margin-top: 16px;
+}
+.memory-editor textarea {
+  resize: vertical;
+  width: 100%;
+}
+.memory-source {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 280px;
+  overflow: auto;
+  background: #f4f4f5;
+  padding: 12px;
+}
+.memory-job {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+.memory-job small {
+  flex-basis: 100%;
+  color: #737373;
+}
+/* 记忆设置沿用工作台中性控件；紧凑工具栏避免筛选占满整屏，窄屏再自然换行。 */
+.memory-section button {
+  border: 1px solid #dedede;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  font-size: 12px;
+}
+.memory-section button:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+.memory-section button[type="submit"] {
+  background: #252525;
+  border-color: #252525;
+  color: #fff;
+}
+.memory-section summary {
+  cursor: pointer;
+  font-size: 13px;
+  padding: 6px 0;
+}
+.modal .memory-toggles label {
+  margin: 4px 0;
+}
+.modal .memory-toggles input {
+  margin: 0;
+  accent-color: #303030;
+}
+.modal .memory-toolbar select {
+  width: 180px;
+  margin: 0;
+}
+.modal .memory-toolbar input {
+  width: auto;
+  margin: 0;
+}
+.memory-section .modal-actions {
+  flex-wrap: wrap;
+}
+.memory-card-heading {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.memory-card p,
+.memory-source {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .modal .memory-toolbar select {
+    width: 100%;
+  }
+  .memory-fields label {
+    min-width: 100%;
+  }
+}
+
+/* 技能管理沿用工作台的中性配色；长路径换行，菜单不推挤输入框，窄屏保留可触达操作。 */
+.skill-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+  margin: 16px 0;
+}
+.skill-toolbar label {
+  display: flex;
+  flex: 1;
+  min-width: 160px;
+  flex-direction: column;
+  gap: 6px;
+}
+.skill-toolbar input,
+.skill-toolbar select,
+.skill-menu input {
+  padding: 9px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #252525;
+  width: 100%;
+}
+.skill-source {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+.skill-source code {
+  flex: 1;
+  min-width: 180px;
+  overflow-wrap: anywhere;
+}
+.skill-list {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+.skill-card {
+  border: 1px solid #e7e7e7;
+  border-radius: 12px;
+  padding: 16px;
+}
+.skill-card-heading {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.skill-card-heading > button {
+  font-weight: 600;
+}
+.skill-card-heading > span {
+  flex: 1;
+  font-size: 12px;
+  color: #777;
+}
+.skill-card-heading label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.skill-card p {
+  margin: 10px 0 6px;
+}
+.skill-card small {
+  color: #777;
+  overflow-wrap: anywhere;
+}
+.skill-detail {
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
+  padding-top: 16px;
+  overflow-wrap: anywhere;
+}
+.skill-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  position: relative;
+  padding: 2px 6px 8px;
+}
+.skill-picker > button {
+  font-size: 12px;
+  padding: 4px 10px;
+  border: 1px solid #e3e3e3;
+  border-radius: 7px;
+  background: #fafafa;
+}
+.skill-picker .skill-chip {
+  background: #f0f3f5;
+}
+.skill-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 20;
+  width: min(420px, 85vw);
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px #0002;
+}
+.skill-menu > button {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  padding: 10px;
+  margin: 4px 0;
+  border-radius: 7px;
+  background: transparent;
+  gap: 4px;
+}
+.skill-menu > button:hover {
+  background: #f4f4f4;
+}
+.skill-menu small {
+  color: #777;
+  font-size: 12px;
+}
+.skill-usage {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 技能操作沿用浅色工作台按钮，避免浏览器默认控件和复选框被通用表单宽度挤压。 */
+.skill-toolbar label {
+  margin: 0;
+  font-size: 13px;
+}
+.skill-toolbar > button,
+.skill-source > button {
+  appearance: none;
+  border: 1px solid #dedede;
+  border-radius: 8px;
+  padding: 9px 12px;
+  background: #fafafa;
+  color: #333;
+  font: inherit;
+  font-size: 12px;
+}
+.skill-card-heading > button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #292929;
+}
+.skill-card-heading label {
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin: 0;
+  font-size: 12px;
+}
+.skill-card-heading input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #333;
+}
+.skill-menu > button[data-highlight="true"] {
+  background: #f3f3f3;
+}
+.skill-detail details {
+  margin: 12px 0;
+}
+
+/* Hook 设置及过程：保持工作台中性配色，长路径和日志不撑开移动端。 */
+.hook-editor {
+  width: 100%;
+  min-height: 240px;
+  font: 13px / 1.6 monospace;
+  resize: vertical;
+  margin: 8px 0;
+}
+.hook-path,
+.hook-preview code,
+.hook-preview small {
+  overflow-wrap: anywhere;
+}
+.hook-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+.hook-preview,
+.hook-process {
+  border: 1px solid var(--border, #ddd);
+  border-radius: 10px;
+  padding: 14px;
+  margin: 12px 0;
+}
+.hook-preview > div {
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+.hook-process {
+  font-size: 13px;
+  color: #555;
+}
+.hook-process pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 300px;
+  overflow: auto;
+}
+
+/* 插件管理沿用现有浅色对话框，长来源与组件配置保持可换行，窄屏不产生横向溢出。 */
+.plugin-install,
+.plugin-card {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 14px 0;
+}
+.plugin-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}
+.plugin-card p {
+  overflow-wrap: anywhere;
+}
+.plugin-install input {
+  flex: 1;
+  min-width: 160px;
+}
+.plugin-list pre,
+.hook-preview pre {
+  overflow: auto;
+  max-height: 240px;
+}
+
+/* 插件表单让控件跟随内容；全局输入框规则不能把复选框拉成整行。 */
+.plugin-install .dialog-actions,
+.plugin-card .dialog-actions,
+.hook-preview .dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.plugin-install .dialog-actions select {
+  width: auto;
+  max-width: 100%;
+}
+.plugin-install .dialog-actions input {
+  width: auto;
+  min-width: 0;
+  flex: 1 1 220px;
+}
+.modal .hook-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.modal .hook-toggle input[type="checkbox"] {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  margin: 0;
+}
+
+/* 团队过程使用紧凑卡片；长消息折行，不挤压移动端输入区。 */
+.team-panel {
+  margin: 1rem auto;
+  width: min(100%, 860px);
+  padding: 1rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+}
+.team-panel summary {
+  cursor: pointer;
+  padding: 0.4rem 0;
+}
+.team-members {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.team-member {
+  padding: 14px;
+  background: #f7f7f8;
+  border-radius: 12px;
+  min-width: 0;
+}
+.team-member header,
+.team-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+.team-member header span,
+.team-message small {
+  color: #71717a;
+  font-size: 12px;
+}
+.team-member p {
+  overflow-wrap: anywhere;
+}
+.team-actions {
+  justify-content: flex-start;
+  margin: 12px 0;
+}
+.team-panel pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 320px;
+  overflow: auto;
+  font-size: 12px;
+}
+.team-message {
+  border-bottom: 1px solid #e4e4e7;
+  padding: 12px 0;
+}
+.team-message small {
+  display: block;
+}
+/* 成员操作沿用工作台的中性按钮；展开的执行过程有独立留白和可阅读宽度。 */
+.team-panel button {
+  border: 1px solid var(--line, #e4e4e7);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: var(--surface, #fff);
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.team-panel button:hover:not(:disabled) {
+  background: #eeeef0;
+}
+.team-member > section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e4e4e7;
+}
+.team-member .markdown {
+  font-size: 14px;
+}
+.team-panel .muted {
+  color: #71717a;
+  font-size: 12px;
+}
+
+/* 观测调试工作台：紧凑中性布局，时间条表达并行，原始正文仅在用户展开后加载。 */
+.modal:has(.observation-view) {
+  width: min(1240px, 95vw);
+  max-width: 1240px;
+}
+.observation-view {
+  font-size: 13px;
+}
+.observation-toolbar,
+.obs-toggle,
+.obs-tabs,
+.obs-filters,
+.obs-capture,
+.run-observation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.observation-toolbar {
+  justify-content: space-between;
+}
+.modal .obs-toggle input {
+  width: auto;
+  margin: 0;
+}
+.obs-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+.obs-metrics > div {
+  padding: 16px;
+  background: #f7f8fa;
+  border: 1px solid #e6e8ee;
+  border-radius: 12px;
+}
+.obs-metrics strong,
+.obs-metrics span,
+.obs-table small,
+.obs-trace-list small,
+.obs-call-meta span {
+  display: block;
+}
+.obs-metrics strong {
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+}
+.obs-metrics span,
+.obs-span-label small {
+  color: #727886;
+  margin-top: 5px;
+}
+.obs-tabs {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 9px;
+  margin: 16px 0;
+}
+.obs-tabs button {
+  border: 0;
+  background: transparent;
+  padding: 8px 12px;
+}
+.obs-tabs button[aria-pressed="true"] {
+  background: #edf0f6;
+  color: #252e44;
+  border-radius: 7px;
+}
+.obs-filters {
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+.modal .obs-filters input {
+  width: 150px;
+  padding: 7px;
+}
+.obs-workbench {
+  display: grid;
+  grid-template-columns: 235px 1fr;
+  min-height: 240px;
+  border: 1px solid #e4e7ed;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.obs-trace-list {
+  border-right: 1px solid #e4e7ed;
+  max-height: 500px;
+  overflow: auto;
+  padding: 8px;
+}
+.obs-trace-list button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  margin-bottom: 4px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+}
+.obs-trace-list button.selected,
+.obs-span.selected {
+  background: #edf2fa;
+}
+.obs-timeline {
+  overflow: auto;
+  padding: 12px;
+}
+.obs-axis {
+  display: flex;
+  justify-content: space-between;
+  color: #8a90a0;
+  padding: 0 0 10px 160px;
+}
+.obs-span {
+  display: grid;
+  grid-template-columns: 160px minmax(100px, 1fr) 68px;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  border: 0;
+  padding: 9px 5px;
+  text-align: left;
+  background: transparent;
+  border-bottom: 1px solid #f0f1f4;
+  font-size: 12px;
+}
+.obs-span-label strong,
+.obs-span-label small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.obs-track {
+  position: relative;
+  height: 20px;
+  background: repeating-linear-gradient(
+    90deg,
+    #edf0f5 0 1px,
+    transparent 1px 25%
+  );
+  overflow: hidden;
+}
+.obs-bar {
+  position: absolute;
+  top: 5px;
+  height: 10px;
+  border-radius: 4px;
+  min-width: 3px;
+}
+.obs-bar.model {
+  background: #8a74c9;
+}
+.obs-bar.tool {
+  background: #538eaf;
+}
+.obs-bar.other {
+  background: #a5adba;
+}
+.obs-detail {
+  padding: 16px 0;
+}
+.obs-detail pre {
+  max-height: 420px;
+  overflow: auto;
+  background: #f7f8fa;
+  padding: 14px;
+  border: 1px solid #e3e6ec;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.obs-call-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 12px 0;
+  color: #606775;
+}
+.obs-capture {
+  flex-wrap: wrap;
+  padding: 10px;
+  border-bottom: 1px solid #eaecf0;
+}
+.obs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.obs-table td,
+.obs-table th {
+  text-align: left;
+  border-bottom: 1px solid #e7e9ee;
+  padding: 12px 8px;
+  overflow-wrap: anywhere;
+}
+.obs-price-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.run-observation {
+  flex-wrap: wrap;
+  color: #818691;
+  font-size: 11px;
+  margin: 12px 0;
+}
+.run-observation button {
+  border: 0;
+  background: transparent;
+  color: #627ba8;
+  padding: 0;
+}
+@media (max-width: 700px) {
+  .obs-workbench {
+    grid-template-columns: 1fr;
+  }
+  .obs-trace-list {
+    max-height: 160px;
+    border-right: 0;
+    border-bottom: 1px solid #e4e7ed;
+  }
+  .obs-metrics {
+    grid-template-columns: 1fr;
+  }
+  .obs-price-form {
+    grid-template-columns: 1fr;
+  }
+  .obs-span {
+    grid-template-columns: 110px minmax(70px, 1fr) 60px;
+  }
+}
+
+/* 时间轴折叠与详情分别使用原生按钮，避免嵌套交互控件破坏键盘行为。 */
+.obs-node {
+  position: relative;
+}
+.obs-collapse {
+  position: absolute;
+  z-index: 1;
+  top: 10px;
+  border: 0;
+  background: transparent;
+  padding: 3px;
+  color: #7a7f8a;
+}
+
+/* 观测页使用紧凑筛选和固定标尺，树缩进只影响名称，所有瀑布条共用时间原点。 */
+.observation-view .obs-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+.observation-view .obs-filters input,
+.observation-view .obs-filters select {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 8px;
+  font-size: 12px;
+}
+.modal:has(.observation-view) .modal-heading {
+  position: sticky;
+  top: -28px;
+  background: #fff;
+  z-index: 4;
+  padding: 12px 0;
+}
+.observation-view button:not(.obs-span):not(.obs-collapse) {
+  border: 1px solid #dddfe5;
+  border-radius: 7px;
+  padding: 6px 10px;
+  background: #fff;
+  font-size: 12px;
+}
+.observation-view button[aria-pressed="true"] {
+  background: #ececf4;
+  border-color: #dadbe5;
+}
+
+/* 权限选择与项目入口同级；模式名称持续可见，不把完全访问藏进设置页。 */
+.execution-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 4px 7px;
+}
+.execution-mode select {
+  width: auto;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  padding: 3px 18px 3px 2px;
+  cursor: pointer;
+}
+.execution-mode.unrestricted {
+  color: #946325;
+  background: #fcf5e9;
+}
+.execution-mode select:disabled {
+  cursor: default;
+  opacity: 1;
+}
+.execution-mode-note {
+  margin: 5px 0 0;
+  color: #8a642d;
+  font-size: 11px;
+  line-height: 1.5;
 }

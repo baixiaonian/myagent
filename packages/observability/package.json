@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "观测契约、关联字段与脱敏约定",
+  "description": "观测端口、调用关联、容量边界和定点计价",
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b"

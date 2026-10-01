@@ -1,10 +1,5 @@
 # extensions
 
-插件清单、作用域注册、Skill 与 Hook 生命周期。
+Skill 元信息校验、显式选择、目录与资源端口已实现；Hook 四事件/受控执行已实现，插件清单/兼容性与来源端口已实现。具体文件读取在 adapters，运行协调在 application，不拥有 Agent 循环。
 
-状态：工程骨架。当前没有对应的 Agent 业务实现。
-
-- 入口：`src/index.ts`。
-- 允许的内部依赖：`@myagent/contracts`, `@myagent/kernel`。
-- 开发前阅读 [模块关系](../../docs/architecture/modules.md) 和 [当前状态](../../docs/STATUS.md)。
-- 新增功能时同时更新上述文档、相关局部 AGENTS.md（规则有变化时）和 [迭代历史](../../docs/history/README.md)。
+[插件架构](../../docs/architecture/plugins.md) · [Skill 架构](../../docs/architecture/skills.md) · [当前状态](../../docs/STATUS.md)

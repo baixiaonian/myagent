@@ -19,6 +19,15 @@
     },
     {
       "path": "../../packages/content"
+    },
+    {
+      "path": "../../packages/extensions"
+    },
+    {
+      "path": "../../packages/orchestration"
+    },
+    {
+      "path": "../../packages/observability"
     }
   ]
 }

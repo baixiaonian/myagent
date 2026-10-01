@@ -28,14 +28,20 @@ export interface ToolResult {
   ok: boolean;
   data: JsonValue;
   error: ChatError | null;
-  /** 实际回传模型的文本；截断显式标记，完整 data 仍留在记录中。 */
+  /** 回传模型的投影；截断明确标记，已保存结果仍可查阅，采集完整性由 ResultRef 单独说明。 */
   modelContent: string;
   truncated: boolean;
+  resultRef?: string;
+  outcome?: "succeeded" | "failed" | "cancelled" | "unknown" | "denied";
+  effectsPossible?: boolean;
 }
 export interface ToolExecution extends ToolCall {
   status:
     | "pending"
     | "running"
+    | "waiting_approval"
+    | "queued"
+    | "unknown"
     | "succeeded"
     | "failed"
     | "cancelled"
@@ -69,15 +75,15 @@ export interface RunStep {
   createdAt: string;
   endedAt: string | null;
 }
-/** 容量与时间都是执行资源边界；没有固定模型轮数或计划顺序约束。 */
+/** 仅限制单次请求/动作与上下文；不限制任务累计产出、总时长或模型轮数。 */
 export const AGENT_LIMITS = {
   modelTimeoutMs: 120000,
   toolTimeoutMs: 30000,
-  runTimeoutMs: 600000,
+  /** 单个命令进程的默认超时，独立于整项任务时长。 */
+  commandTimeoutMs: 600000,
   contextCharacters: 32000,
   historyTurns: 20,
   toolResultCharacters: 8000,
-  outputCharacters: 200000,
 } as const;
 export type AgentLimits = {
   -readonly [K in keyof typeof AGENT_LIMITS]: number;

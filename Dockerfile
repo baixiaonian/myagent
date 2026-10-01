@@ -16,12 +16,15 @@ RUN find . -type d -name node_modules -prune -exec rm -rf '{}' + && pnpm install
 
 # 最终镜像不需要编译工具链；由 node 用户运行，数据卷权限在降权前建立。
 FROM node:24-bookworm-slim AS runtime
-ENV NODE_ENV=production MYAGENT_CONTAINER=1 MYAGENT_DATA_DIR=/data PORT=3000
+ENV NODE_ENV=production MYAGENT_CONTAINER=1 MYAGENT_DATA_DIR=/data MYAGENT_WORKSPACE_ROOT=/workspaces MYAGENT_SKILL_ROOT=/skills MYAGENT_HOOK_ROOT=/hooks PORT=3000
 WORKDIR /app
+# 安装原生工具依赖；标准模式必须通过功能探测，嵌套隔离不可用时拒绝；显式完全访问不使用内层沙箱。
+RUN apt-get update && apt-get install -y --no-install-recommends bubblewrap socat ripgrep python3 git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build --chown=node:node /app /app
-RUN mkdir /data && chown node:node /data && chmod 700 /data
+RUN mkdir -p /data /workspaces /skills /hooks && chown node:node /data /workspaces /skills /hooks && chmod 700 /data /workspaces /skills /hooks
 USER node
-VOLUME /data
+VOLUME ["/data", "/workspaces", "/skills", "/hooks"]
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD node -e "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "apps/server/dist/main.js"]

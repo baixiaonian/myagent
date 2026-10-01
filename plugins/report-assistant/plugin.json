@@ -1,0 +1,7 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "report-assistant",
+  "version": "1.0.0",
+  "description": "按项目约定生成中文报告，使用本地样例销售数据并检查报告路径。",
+  "extensions": {"com.myagent": {"apiVersion": 1, "hooks": "./hooks/myagent.json"}}
+}

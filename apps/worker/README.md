@@ -1,10 +1,8 @@
 # worker
 
-隔离执行入口；当前仅启动提示。
+状态：受控工具执行 v1。Server 通过 IPC 创建独立监督器，原生沙箱执行文件和命令。
 
-状态：工程骨架。当前没有对应的 Agent 业务实现。
-
-- 入口：`src/main.ts`。
-- 允许的内部依赖：`@myagent/contracts`, `@myagent/adapters`。
-- 开发前阅读 [模块关系](../../docs/architecture/modules.md) 和 [当前状态](../../docs/STATUS.md)。
-- 新增功能时同时更新上述文档、相关局部 AGENTS.md（规则有变化时）和 [迭代历史](../../docs/history/README.md)。
+- `src/main.ts`：Worker 启动，仅接受父进程 IPC。
+- `src/action.ts`：沙箱内文件动作，从 stdin 读取已校验请求并输出结构化回执。
+- 允许依赖 contracts / adapters；不能启动另一个 Agent Loop。
+- 使用条件与保证见 [工具执行系统](../../docs/architecture/tool-execution.md)。

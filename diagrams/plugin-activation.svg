@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1510" viewBox="0 0 1500 1510" role="img" aria-labelledby="title desc">
+<title id="title">MyAgent 插件：从配置到本轮生效</title>
+<desc id="desc">插件包声明和管理设置经校验与确认发布。任务开始冻结同一份版本，三类提供者分别进入上下文、工具定义与生命周期。外部 Hook 兼容层尚未实现。</desc>
+<rect width="1500" height="1510" fill="#FFFFFF"/>
+<text x="52" y="28" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="17" font-weight="400" fill="#647488">MYAGENT  /  PLUGIN ACTIVATION</text>
+<text x="52" y="66" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="42" font-weight="600" fill="#1F3042">插件从配置到生效</text>
+<text x="54" y="125" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="400" fill="#647488">一份组合包，三条接入路径，复用同一个 Agent Loop。</text>
+<text x="54" y="184" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="600" fill="#1F3042">01   配置与安装</text>
+<text x="982" y="188" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#647488">Web 设置 → SDK → 插件管理 API</text>
+<rect x="54" y="238" width="292" height="216" rx="16" fill="#F8FAFC" stroke="#D9E2EB" stroke-width="1"/>
+<text x="75" y="257" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="24" font-weight="600" fill="#1F3042">本地目录 / HTTPS Git</text>
+<text x="77" y="306" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="400" fill="#1F3042">plugin.json</text>
+<text x="77" y="342" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#647488">skills/ · mcp.json</text>
+<text x="77" y="377" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#647488">Hook: com.myagent</text>
+<text x="77" y="418" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#647488">也识别 .codex-plugin 清单</text>
+<rect x="394" y="238" width="306" height="216" rx="16" fill="#FFFFFF" stroke="#D9E2EB" stroke-width="1"/>
+<text x="416" y="257" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="25" font-weight="600" fill="#1F3042">捕获候选，解析预览</text>
+<text x="416" y="309" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400" fill="#1F3042">内容哈希 · 组件 · 权限</text>
+<text x="416" y="350" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400" fill="#647488">校验文件与兼容性</text>
+<text x="416" y="407" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="17" font-weight="400" fill="#647488">LocalPluginFiles / extensions</text>
+<rect x="748" y="238" width="294" height="216" rx="16" fill="#F4F0FB" stroke="#D9CDEC" stroke-width="1"/>
+<text x="770" y="257" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="25" font-weight="600" fill="#6B57A6">用户确认准确版本</text>
+<text x="770" y="309" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400" fill="#1F3042">用户级 / 当前项目</text>
+<text x="770" y="350" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#1F3042">启停 · 组件设置 · 资源</text>
+<text x="770" y="407" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#647488">绑定包哈希与管理版本</text>
+<rect x="1090" y="238" width="356" height="216" rx="16" fill="#EFF5FC" stroke="#C6D7EB" stroke-width="1"/>
+<text x="1112" y="257" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="25" font-weight="600" fill="#3566A8">发布与登记</text>
+<text x="1112" y="309" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400" fill="#1F3042">不可变包 → 数据库引用</text>
+<text x="1112" y="350" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#647488">保存安装、作用域与组件配置</text>
+<text x="1112" y="407" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#3566A8">PluginService.confirm</text>
+<polygon points="394,345 383.0,340.0 383.0,350.0" fill="#3566A8"/>
+<polyline points="346,345 394,345" fill="none" stroke="#3566A8" stroke-width="2"/>
+<polygon points="748,345 737.0,340.0 737.0,350.0" fill="#3566A8"/>
+<polyline points="700,345 748,345" fill="none" stroke="#3566A8" stroke-width="2"/>
+<polygon points="1090,345 1079.0,340.0 1079.0,350.0" fill="#3566A8"/>
+<polyline points="1042,345 1090,345" fill="none" stroke="#3566A8" stroke-width="2"/>
+<rect x="394" y="479" width="648" height="56" rx="10" fill="#FCF3F2" stroke="#EDDCDA" stroke-width="1"/>
+<text x="412" y="496" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#AC4A49">当前：外部 Hook 未适配 → 阻断启用，需适配或明确排除</text>
+<polygon points="547,479 552.0,468.0 542.0,468.0" fill="#AC4A49"/>
+<polyline points="547,454 547,479" fill="none" stroke="#AC4A49" stroke-width="2"/>
+<text x="63" y="484" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#647488">不执行安装脚本</text>
+<text x="63" y="518" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#647488">不改写手工组件配置</text>
+<text x="54" y="580" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="600" fill="#1F3042">02   新任务冻结版本</text>
+<rect x="54" y="632" width="1392" height="92" rx="16" fill="#F4F0FB" stroke="#D9CDEC" stroke-width="1"/>
+<text x="77" y="650" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="25" font-weight="600" fill="#6B57A6">ChatService → PluginService.initialize</text>
+<text x="78" y="690" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#1F3042">有效作用域 + 包版本 + 组件选择 + 配置引用</text>
+<text x="1014" y="661" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400" fill="#6B57A6">本轮固定，三类能力共用</text>
+<polygon points="1268,632 1273.0,621.0 1263.0,621.0" fill="#6B57A6"/>
+<polyline points="1268,454 1268,632" fill="none" stroke="#6B57A6" stroke-width="2"/>
+<text x="1285" y="550" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#6B57A6">开始 Run</text>
+<rect x="54" y="790" width="420" height="201" rx="16" fill="#EFF5FC" stroke="#C6D7EB" stroke-width="1"/>
+<rect x="540" y="790" width="420" height="201" rx="16" fill="#EDF8F2" stroke="#C3DDCD" stroke-width="1"/>
+<rect x="1026" y="790" width="420" height="201" rx="16" fill="#FFF6E8" stroke="#E9D6B6" stroke-width="1"/>
+<polygon points="264,790 269.0,779.0 259.0,779.0" fill="#6B57A6"/>
+<polyline points="750,724 750,754 264,754 264,790" fill="none" stroke="#6B57A6" stroke-width="2"/>
+<polygon points="750,790 755.0,779.0 745.0,779.0" fill="#6B57A6"/>
+<polyline points="750,724 750,754 750,754 750,790" fill="none" stroke="#6B57A6" stroke-width="2"/>
+<polygon points="1236,790 1241.0,779.0 1231.0,779.0" fill="#6B57A6"/>
+<polyline points="750,724 750,754 1236,754 1236,790" fill="none" stroke="#6B57A6" stroke-width="2"/>
+<text x="77" y="812" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="31" font-weight="600" fill="#3566A8">Skill</text>
+<text x="77" y="858" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="400" fill="#1F3042">目录 → 按需加载 SKILL.md</text>
+<text x="77" y="900" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#647488">显式选择也可首请求前加载</text>
+<text x="77" y="947" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#3566A8">SkillService → ContextService</text>
+<text x="562" y="812" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="31" font-weight="600" fill="#26755B">MCP</text>
+<text x="562" y="858" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400" fill="#1F3042">握手 / tools/list → 工具目录</text>
+<text x="562" y="900" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#647488">默认按需；可配置直接提供</text>
+<text x="562" y="947" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#26755B">MCP Runtime · 按版本 / 项目隔离</text>
+<text x="1048" y="812" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="31" font-weight="600" fill="#9B691D">Hook</text>
+<text x="1048" y="858" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="400" fill="#1F3042">固定时点触发已授权脚本</text>
+<text x="1048" y="900" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#1F3042">stdin JSON → 脚本 → stdout JSON</text>
+<text x="1048" y="947" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#9B691D">HookService · 独立权限与隔离</text>
+<rect x="40" y="1070" width="1420" height="301" rx="20" fill="#F8FAFC" stroke="#DCE3EB" stroke-width="1"/>
+<text x="64" y="1088" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="600" fill="#1F3042">03   执行循环</text>
+<rect x="916" y="1081" width="511" height="63" rx="10" fill="#FFF6E8" stroke="#E9D6B6" stroke-width="1"/>
+<text x="931" y="1092" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="17" font-weight="400" fill="#9B691D">RunStart · PreToolUse · PostToolUse · RunEnd</text>
+<text x="932" y="1119" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="17" font-weight="400" fill="#9B691D">应用层触发；模型不负责调用 Hook</text>
+<polygon points="1236,1081 1241.0,1070.0 1231.0,1070.0" fill="#9B691D"/>
+<polyline points="1236,991 1236,1081" fill="none" stroke="#9B691D" stroke-width="2" stroke-dasharray="5 4"/>
+<rect x="80" y="1180" width="382" height="106" rx="16" fill="#FFFFFF" stroke="#D9E2EB" stroke-width="1"/>
+<text x="103" y="1198" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="600" fill="#3566A8">组装上下文</text>
+<text x="103" y="1243" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#647488">规则 / 历史 / 已加载 Skill</text>
+<rect x="570" y="1180" width="360" height="106" rx="16" fill="#EFF5FC" stroke="#C6D7EB" stroke-width="1"/>
+<text x="594" y="1198" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="600" fill="#3566A8">请求模型</text>
+<text x="594" y="1243" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#647488">接收工具定义，自主决定行动</text>
+<rect x="1038" y="1180" width="382" height="106" rx="16" fill="#EDF8F2" stroke="#C3DDCD" stroke-width="1"/>
+<text x="1060" y="1198" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="600" fill="#26755B">受控工具执行</text>
+<text x="1060" y="1243" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#647488">ToolService → Worker / MCP</text>
+<polygon points="264,1180 269.0,1169.0 259.0,1169.0" fill="#3566A8"/>
+<polyline points="264,991 264,1180" fill="none" stroke="#3566A8" stroke-width="2"/>
+<text x="280" y="1024" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#3566A8">说明进入上下文</text>
+<polygon points="750,1180 755.0,1169.0 745.0,1169.0" fill="#26755B"/>
+<polyline points="750,991 750,1180" fill="none" stroke="#26755B" stroke-width="2"/>
+<text x="766" y="1024" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#26755B">工具定义</text>
+<polygon points="570,1233 559.0,1228.0 559.0,1238.0" fill="#3566A8"/>
+<polyline points="462,1233 570,1233" fill="none" stroke="#3566A8" stroke-width="2"/>
+<polygon points="1038,1233 1027.0,1228.0 1027.0,1238.0" fill="#3566A8"/>
+<polyline points="930,1233 1038,1233" fill="none" stroke="#3566A8" stroke-width="2"/>
+<polygon points="271,1286 266.0,1297.0 276.0,1297.0" fill="#26755B"/>
+<polyline points="1229,1286 1229,1324 271,1324 271,1286" fill="none" stroke="#26755B" stroke-width="2"/>
+<text x="572" y="1338" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#26755B">结果落库 → 反馈模型 → 继续或结束</text>
+<path d="M54 1400H1446" fill="none" stroke="#E7EDF2"/>
+<text x="56" y="1421" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400" fill="#1F3042">更新 / 禁用 / 卸载 → 新 Run 生效；已有 Run 保留原版本，旧引用释放后清理。</text>
+<text x="56" y="1464" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#647488">标准模式本地动作受权限与沙箱约束；Hook 独立授权。资源 / 凭证撤销仍即时约束派发。</text>
+</svg>

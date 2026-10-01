@@ -9,15 +9,24 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@anthropic-ai/sandbox-runtime": "0.0.76",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@myagent/content": "workspace:*",
     "@myagent/contracts": "workspace:*",
+    "@myagent/extensions": "workspace:*",
     "@myagent/kernel": "workspace:*",
     "@myagent/observability": "workspace:*",
     "@myagent/state": "workspace:*",
+    "@opentelemetry/api": "1.9.1",
+    "@opentelemetry/exporter-trace-otlp-proto": "0.222.0",
+    "@opentelemetry/sdk-trace-base": "2.11.0",
+    "ajv": "8.20.0",
     "better-sqlite3": "13.0.3",
     "drizzle-orm": "0.45.2",
     "openai": "7.10.0",
-    "ajv": "8.20.0"
+    "tree-sitter-bash": "0.25.1",
+    "web-tree-sitter": "0.25.10",
+    "yaml": "2.8.2"
   },
   "exports": {
     ".": {

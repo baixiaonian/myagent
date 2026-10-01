@@ -1,5 +1,8 @@
 /**
- * Worker 占位入口：当前没有任务执行、进程隔离或沙箱能力。
- * 后续接收受限执行请求，不能直接修改主会话状态。
+ * 独立受控执行入口：只接收父进程 IPC，把文件和命令放入原生沙箱并返回执行回执。
+ * 本进程不运行模型、不持有模型凭证、不直接修改聊天数据库。
  */
-console.info("@myagent/worker 工程入口已就绪；业务功能尚未实现。");
+import { runExecutionWorker } from "@myagent/adapters";
+
+if (!process.send) throw new Error("Worker 必须由 MyAgent Server 装配启动。");
+runExecutionWorker();

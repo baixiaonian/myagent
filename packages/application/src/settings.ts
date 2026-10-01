@@ -4,11 +4,12 @@
  */
 import {
   AppError,
+  CONTEXT_DEFAULTS,
   LIMITS,
   type PublicSettings,
   type SettingsInput,
 } from "@myagent/contracts";
-import { type ModelPort, runChat } from "@myagent/kernel";
+import { contextBudget, type ModelPort, runChat } from "@myagent/kernel";
 import type {
   ChatStore,
   CredentialStore,
@@ -17,8 +18,12 @@ import type {
 export type ModelFactory = (
   settings: StoredSettings,
   apiKey: string,
+  observer?: import("@myagent/observability").ModelTransportObserver,
 ) => ModelPort;
 export class SettingsService {
+  transportObserver?: import("@myagent/observability").ModelTransportObserver;
+  /** 统一限制所有模型请求；保留调用方的连接快照和凭证边界。 */
+  wrapModel?: (model: ModelPort, settings: StoredSettings) => ModelPort;
   constructor(
     private readonly store: ChatStore,
     private readonly credentials: CredentialStore,
@@ -57,6 +62,17 @@ export class SettingsService {
         "设置已在其他页面更新，请重新打开设置。",
         409,
       );
+    const capacity = {
+      contextWindowTokens:
+        input.contextWindowTokens ??
+        old.contextWindowTokens ??
+        CONTEXT_DEFAULTS.contextWindowTokens,
+      outputReserveTokens:
+        input.outputReserveTokens ??
+        old.outputReserveTokens ??
+        CONTEXT_DEFAULTS.outputReserveTokens,
+    };
+    contextBudget(capacity);
     let url: URL;
     try {
       url = new URL(input.baseUrl.trim());
@@ -102,6 +118,7 @@ export class SettingsService {
     return {
       settings: {
         ...old,
+        ...capacity,
         baseUrl: url.toString().replace(/\/$/, ""),
         model: input.model.trim(),
         apiProtocol: input.apiProtocol ?? old.apiProtocol,
@@ -131,25 +148,44 @@ export class SettingsService {
     return this.get();
   }
   // 一次读取配置和密钥，交给注入工厂生成专属 ModelPort；绝不把密钥加入模型消息。
-  model(): { model: ModelPort; settings: StoredSettings } {
-    const settings = this.store.settings();
+  model(snapshot?: StoredSettings): {
+    model: ModelPort;
+    settings: StoredSettings;
+  } {
+    const settings = snapshot ?? this.store.settings();
     const secret = settings.credentialRef
       ? this.credentials.read(settings.credentialRef)
       : null;
+    if (snapshot && !secret)
+      throw new AppError(
+        "resume_credentials_unavailable",
+        "旧运行的凭证已更换或清除，无法恢复原连接。请结束旧运行后重新发起任务。",
+        409,
+      );
     if (!secret || !settings.model || !settings.baseUrl)
       throw new AppError(
         "settings_required",
         "请先在设置中填写模型接口、模型名称和密钥。",
         409,
       );
-    return { model: this.makeModel(settings, secret), settings };
+    const model = this.makeModel(settings, secret, this.transportObserver);
+    return { model: this.wrapModel?.(model, settings) ?? model, settings };
   }
   // 验证尚未保存的候选连接，使用 15 秒短请求；不调用 save，也不创建 Session / Run。
   async test(input: SettingsInput): Promise<void> {
     const { settings, secret } = this.prepared(input);
     if (!secret) throw new AppError("settings_required", "请先填写密钥。");
+    const inner =
+      this.wrapModel?.(
+        this.makeModel(settings, secret, this.transportObserver),
+        settings,
+      ) ?? this.makeModel(settings, secret, this.transportObserver);
+    const model: ModelPort = {
+      stream: (messages, signal, tools) =>
+        inner.stream(messages, signal, tools, { purpose: "connection_test" }),
+    };
     await runChat(
-      this.makeModel(settings, secret),
+      model,
       [{ role: "user", content: "Reply with OK." }],
       new AbortController().signal,
       () => {},

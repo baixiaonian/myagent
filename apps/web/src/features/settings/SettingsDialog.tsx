@@ -2,11 +2,12 @@
  * 模型设置表单：维护尚未保存的地址、模型、系统提示和待替换密钥。
  * 仅通过 SDK 保存、测试或清除；保存成功后清空密钥输入，不写浏览器持久存储。
  */
-import type {
-  ApiProtocol,
-  ChatClient,
-  PublicSettings,
-  SettingsInput,
+import {
+  type ApiProtocol,
+  type ChatClient,
+  CONTEXT_DEFAULTS,
+  type PublicSettings,
+  type SettingsInput,
 } from "@myagent/sdk";
 import {
   CheckCircle2,
@@ -34,6 +35,12 @@ export function SettingsDialog({
   );
   const [baseUrl, setBaseUrl] = useState(settings.baseUrl);
   const [model, setModel] = useState(settings.model);
+  const [contextWindowTokens, setContextWindowTokens] = useState(
+    settings.contextWindowTokens ?? CONTEXT_DEFAULTS.contextWindowTokens,
+  );
+  const [outputReserveTokens, setOutputReserveTokens] = useState(
+    settings.outputReserveTokens ?? CONTEXT_DEFAULTS.outputReserveTokens,
+  );
   const [key, setKey] = useState("");
   const [prompt, setPrompt] = useState(settings.systemPrompt);
   const [busy, setBusy] = useState("");
@@ -43,6 +50,8 @@ export function SettingsDialog({
   // 未编辑密钥就省略 apiKey 字段，表示继续使用已保存值；不能将掩码作为密钥重新提交。
   const input = (): SettingsInput => ({
     apiProtocol,
+    contextWindowTokens,
+    outputReserveTokens,
     baseUrl,
     model,
     systemPrompt: prompt,
@@ -95,7 +104,23 @@ export function SettingsDialog({
     }
   }
   return (
-    <Modal title="模型设置" wide onClose={onClose}>
+    <Modal
+      title="模型设置"
+      wide
+      onClose={onClose}
+      dirty={
+        Boolean(key) ||
+        baseUrl !== settings.baseUrl ||
+        model !== settings.model ||
+        apiProtocol !== settings.apiProtocol ||
+        prompt !== settings.systemPrompt ||
+        contextWindowTokens !==
+          (settings.contextWindowTokens ??
+            CONTEXT_DEFAULTS.contextWindowTokens) ||
+        outputReserveTokens !==
+          (settings.outputReserveTokens ?? CONTEXT_DEFAULTS.outputReserveTokens)
+      }
+    >
       <p className="modal-description">
         连接你自己的模型，让每一次对话都从这里开始。
       </p>
@@ -185,6 +210,35 @@ export function SettingsDialog({
               )}
             </div>
           </label>
+          <label>
+            上下文窗口（token）
+            <input
+              type="number"
+              required
+              min={1}
+              max={2147483647}
+              value={contextWindowTokens}
+              onChange={(event) =>
+                setContextWindowTokens(Number(event.target.value))
+              }
+            />
+          </label>
+          <label>
+            输出预留（token）
+            <input
+              type="number"
+              required
+              min={1}
+              max={2147483647}
+              value={outputReserveTokens}
+              onChange={(event) =>
+                setOutputReserveTokens(Number(event.target.value))
+              }
+            />
+          </label>
+          <p className="field-hint">
+            请按服务商说明填写，默认值不是自动识别结果。系统预留安全余量；接近容量时使用当前模型整理历史，会产生额外模型用量。输出预留用于本地预算计算。
+          </p>
           <label>
             系统提示词 <span className="optional">可选</span>
             <textarea

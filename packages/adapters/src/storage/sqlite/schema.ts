@@ -13,8 +13,12 @@ export const sessions = sqliteTable("sessions", {
   seq: integer("seq").notNull(),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
+  workspaceId: text("workspace_id"),
 });
 export const messages = sqliteTable("messages", {
+  origin: text("origin", { mode: "json" }).$type<
+    NonNullable<Message["origin"]>
+  >(),
   id: text("id").primaryKey(),
   sessionId: text("session_id").notNull(),
   runId: text("run_id").notNull(),

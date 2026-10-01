@@ -17,6 +17,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildServer } from "../../apps/server/src/bootstrap/index.js";
 import type { Run, Session } from "../../packages/contracts/src/index.js";
+import { isActiveRun } from "../../packages/contracts/src/index.js";
 import { applyEvent } from "../../packages/sdk/src/index.js";
 import { mockProvider } from "./provider.js";
 
@@ -49,8 +50,8 @@ function start(id: string, revision: number, content = "你好") {
 // 轮询真实仓储终态而非假定固定耗时，让用例同时覆盖异步生成和最终持久化。
 async function terminal(id: string): Promise<Run> {
   await expect
-    .poll(() => app.store.getRun(id).status, { timeout: 4000 })
-    .not.toBe("running");
+    .poll(() => isActiveRun(app.store.getRun(id).status), { timeout: 4000 })
+    .toBe(false);
   return app.store.getRun(id);
 }
 // 每个用例独占数据目录与临时模型端口，防止历史、凭证或活动 Run 在用例之间串扰。
@@ -85,6 +86,7 @@ describe("durable chat over real compatible HTTP", () => {
       "messages",
       "model",
       "stream",
+      "stream_options",
       "tools",
     ]);
     expect(app.store.getRun(two.run.id).usage).toBeNull();
@@ -230,6 +232,7 @@ describe("durable chat over real compatible HTTP", () => {
 describe("protocol, errors and credentials", () => {
   it.each([
     ["unauthorized", "model_auth"],
+    ["payment", "model_payment_required"],
     ["missing", "model_not_found"],
     ["limited", "model_rate_limit"],
     ["bad", "model_request"],
@@ -240,6 +243,10 @@ describe("protocol, errors and credentials", () => {
     const run = start(s.id, 0);
     const done = await terminal(run.run.id);
     expect(done.error?.code).toBe(code);
+    if (model === "payment") {
+      expect(done.error?.message).toContain("余额不足");
+      expect(done.error?.message).not.toContain("缩短对话");
+    }
     expect(JSON.stringify(done)).not.toContain(KEY);
     expect(provider.requests).toHaveLength(1);
   });

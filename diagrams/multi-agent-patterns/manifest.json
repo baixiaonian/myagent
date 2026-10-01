@@ -1,0 +1,106 @@
+[
+  {
+    "id": 1,
+    "title": "主 Agent 委派子任务",
+    "base": "01-delegation",
+    "elements": 93,
+    "sources": [
+      [
+        "OpenCode · task",
+        "https://github.com/anomalyco/opencode/blob/dev/packages/opencode/src/tool/task.ts"
+      ],
+      [
+        "Hermes · delegate_task",
+        "https://github.com/NousResearch/hermes-agent/blob/main/tools/delegate_tool.py"
+      ]
+    ]
+  },
+  {
+    "id": 2,
+    "title": "保留子会话，持续协作",
+    "base": "02-continuable",
+    "elements": 62,
+    "sources": [
+      [
+        "Codex · Agent runtime",
+        "https://github.com/openai/codex/blob/main/codex-rs/core/src/agent/control.rs"
+      ],
+      [
+        "DSH · continuable subagent",
+        "https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/subagent.md"
+      ]
+    ]
+  },
+  {
+    "id": 3,
+    "title": "团队任务板＋独立执行",
+    "base": "03-teams",
+    "elements": 90,
+    "sources": [
+      [
+        "DSH · Agent Teams（实验性）",
+        "https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/experimental/agent-team"
+      ],
+      [
+        "Hermes · Kanban",
+        "https://hermes-agent.nousresearch.com/docs/user-guide/features/kanban/"
+      ]
+    ]
+  },
+  {
+    "id": 4,
+    "title": "交出控制权，专家接管",
+    "base": "04-handoff",
+    "elements": 65,
+    "sources": [
+      [
+        "OpenAI Agents SDK · Handoffs",
+        "https://openai.github.io/openai-agents-python/handoffs/"
+      ]
+    ]
+  },
+  {
+    "id": 5,
+    "title": "工作流／图编排",
+    "base": "05-workflow",
+    "elements": 72,
+    "sources": [
+      [
+        "LangGraph · Workflows",
+        "https://docs.langchain.com/oss/python/langgraph/workflows-agents"
+      ],
+      [
+        "CrewAI · Processes",
+        "https://docs.crewai.com/en/concepts/processes"
+      ]
+    ]
+  },
+  {
+    "id": 6,
+    "title": "群聊／轮流讨论",
+    "base": "06-group-chat",
+    "elements": 77,
+    "sources": [
+      [
+        "AutoGen · SelectorGroupChat",
+        "https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/selector-group-chat.html"
+      ]
+    ]
+  },
+  {
+    "id": 7,
+    "title": "把外部 Agent 接为后端",
+    "base": "07-external-runtime",
+    "elements": 65,
+    "sources": [
+      [
+        "DSH · Codex Provider",
+        "https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/subagent/subagent-codex"
+      ],
+      [
+        "DSH · ACP Provider",
+        "https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/subagent/subagent-acp"
+      ]
+    ]
+  }
+]

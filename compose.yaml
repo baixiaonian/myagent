@@ -9,6 +9,13 @@ services:
       - "127.0.0.1:3000:3000"
     volumes:
       - myagent-data:/data
+      - myagent-workspaces:/workspaces
+      - myagent-skills:/skills
+      - myagent-hooks:/hooks
+    environment:
+      MYAGENT_WORKSPACE_ROOT: /workspaces
+      MYAGENT_SKILL_ROOT: /skills
+      MYAGENT_HOOK_ROOT: /hooks
     restart: unless-stopped
     stop_grace_period: 15s
     security_opt:
@@ -17,3 +24,6 @@ services:
       - ALL
 volumes:
   myagent-data:
+  myagent-workspaces:
+  myagent-skills:
+  myagent-hooks:

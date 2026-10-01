@@ -6,3 +6,5 @@ packages:
 allowBuilds:
   esbuild: true
   better-sqlite3: true
+  # 仅加载打包的 Bash WASM，不运行 node-gyp-build。
+  tree-sitter-bash: false

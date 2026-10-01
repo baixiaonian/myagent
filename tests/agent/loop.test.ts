@@ -246,7 +246,7 @@ describe("autonomous loop", () => {
       "cancelled",
     ]);
   });
-  it("tool timeout becomes feedback; model request and total deadlines terminate", async () => {
+  it("tool timeout becomes feedback; single model request timeout still terminates", async () => {
     const input: ModelMessage[][] = [];
     const base = options(
       scripted(
@@ -269,13 +269,12 @@ describe("autonomous loop", () => {
     await expect(
       runAgent({ ...options(hang), limits: { modelTimeoutMs: 10 } }),
     ).rejects.toMatchObject({ code: "timeout" });
-    await expect(
-      runAgent({ ...options(hang), limits: { runTimeoutMs: 10 } }),
-    ).rejects.toMatchObject({ code: "run_timeout" });
   });
   it("accounts for non-text output and reports missing usage without guessing", async () => {
     const model: ModelPort = {
       async *stream() {
+        // 真正跨过旧 1ms 总时限；每次模型请求自己的超时仍保持生效。
+        await new Promise((resolve) => setTimeout(resolve, 25));
         yield { type: "output", characters: 200 };
         yield {
           type: "done",
@@ -285,10 +284,22 @@ describe("autonomous loop", () => {
         };
       },
     };
-    await expect(
-      runAgent({ ...options(model), limits: { outputCharacters: 100 } }),
-    ).rejects.toMatchObject({ code: "output_limit" });
-    expect((await runAgent(options(model))).usage).toBeNull();
+    const base = options(model);
+    // 模拟旧调用方/检查点残留的废弃配置，不能重新引入硬上限。
+    const legacy = Object.assign(
+      { ...AGENT_LIMITS },
+      { outputCharacters: 1, runTimeoutMs: 1 },
+    );
+    let counted = 0;
+    const result = await runAgent({
+      ...base,
+      limits: legacy,
+      accountOutput: (size) => {
+        counted += size;
+      },
+    });
+    expect(counted).toBeGreaterThanOrEqual(200);
+    expect(result.usage).toBeNull();
   });
   it("truncates only the model view of a tool result", async () => {
     const input: ModelMessage[][] = [];

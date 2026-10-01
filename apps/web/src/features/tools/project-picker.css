@@ -1,0 +1,122 @@
+/* 项目浮层样式：锚定输入区，控制高度和长路径省略；路径输入另用通用对话框。 */
+.project-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 15;
+  width: min(360px, 100%);
+  max-height: min(430px, calc(100dvh - 250px));
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow:
+    0 10px 35px #00000016,
+    0 2px 6px #00000008;
+  font-size: 12px;
+}
+.project-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 7px 7px;
+  border-bottom: 1px solid #eee;
+  color: #777;
+}
+.project-search input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 8px 0;
+  font-size: 12px;
+  color: #333;
+  outline: none;
+}
+.project-search input:focus-visible {
+  outline: none;
+}
+.project-search:focus-within {
+  border-bottom-color: #999;
+}
+.project-options {
+  overflow: auto;
+  min-height: 0;
+  padding: 4px 0;
+}
+.project-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  border: 0;
+  border-radius: 6px;
+  padding: 10px;
+  background: transparent;
+  text-align: left;
+}
+.project-option:hover,
+.project-option:focus-visible {
+  background: #f5f5f5;
+}
+.project-option > span {
+  flex: 1;
+  min-width: 0;
+}
+.project-option strong,
+.project-option small {
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.project-option strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+}
+.project-option small {
+  margin-top: 4px;
+  color: #888;
+  font-size: 10px;
+}
+.menu-caption {
+  color: #888;
+  padding: 8px 10px 4px;
+  font-size: 10px;
+  margin: 0;
+}
+.menu-empty {
+  margin: 6px 10px 12px;
+  color: #888;
+}
+.project-notice {
+  margin: 4px;
+  padding: 9px;
+  background: #fff2ef;
+  color: #a25545;
+  border-radius: 6px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.project-menu-actions {
+  border-top: 1px solid #eee;
+  padding-top: 4px;
+}
+.project-menu-actions button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  font-size: 12px;
+}
+.project-menu-actions button:hover {
+  background: #f5f5f5;
+}

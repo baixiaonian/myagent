@@ -21,3 +21,26 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       # 工程检查后再跑浏览器假模型流程，保留两类验证的独立结果。
       - run: pnpm test:e2e
+
+  native-execution:
+    # 两种宿主各自运行真实原生隔离测试；缺失隔离能力必须失败，不能改成跳过来冒充通过。
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y bubblewrap socat ripgrep
+      - if: runner.os == 'macOS'
+        run: command -v rg || brew install ripgrep
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:execution:native

@@ -22,6 +22,9 @@
     },
     {
       "path": "../../packages/observability"
+    },
+    {
+      "path": "../../packages/extensions"
     }
   ]
 }

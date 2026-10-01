@@ -19,11 +19,10 @@ try {
   const variables = {
     modelTimeoutMs: "MYAGENT_MODEL_TIMEOUT_MS",
     toolTimeoutMs: "MYAGENT_TOOL_TIMEOUT_MS",
-    runTimeoutMs: "MYAGENT_RUN_TIMEOUT_MS",
+    commandTimeoutMs: "MYAGENT_COMMAND_TIMEOUT_MS",
     contextCharacters: "MYAGENT_CONTEXT_CHARACTERS",
     historyTurns: "MYAGENT_HISTORY_TURNS",
     toolResultCharacters: "MYAGENT_TOOL_RESULT_CHARACTERS",
-    outputCharacters: "MYAGENT_OUTPUT_CHARACTERS",
   } as const;
   for (const [key, name] of Object.entries(variables)) {
     const raw = process.env[name];
@@ -33,8 +32,59 @@ try {
       throw new AppError("invalid_limits", "资源配置必须为有效正整数。");
     agentLimits[key as keyof AgentLimits] = value;
   }
+  // 旧环境变量不再建立整项任务的硬截止；提示迁移，不能悄悄复活旧限制。
+  if (
+    process.env.MYAGENT_RUN_TIMEOUT_MS !== undefined ||
+    process.env.MYAGENT_OUTPUT_CHARACTERS !== undefined
+  )
+    console.warn(
+      "MYAGENT_RUN_TIMEOUT_MS / MYAGENT_OUTPUT_CHARACTERS 已停用；任务不再受累计时长或产出限制。",
+    );
   const { server } = await buildServer({
     dataDir,
+    captureFileLimit: Number(
+      process.env.MYAGENT_CAPTURE_FILE_BYTES ?? 20 * 1024 ** 2,
+    ),
+    captureTotalLimit: Number(
+      process.env.MYAGENT_CAPTURE_TOTAL_BYTES ?? 1024 ** 3,
+    ),
+    ...(process.env.MYAGENT_OTLP_ENABLED === "1"
+      ? {
+          otlpEndpoint:
+            process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT ??
+            "http://127.0.0.1:4318/v1/traces",
+          otlpHeaders: Object.fromEntries(
+            (process.env.OTEL_EXPORTER_OTLP_HEADERS ?? "")
+              .split(",")
+              .filter(Boolean)
+              .map((entry) => {
+                const index = entry.indexOf("=");
+                if (index < 1) throw Error("invalid OTLP header");
+                return [
+                  entry.slice(0, index),
+                  decodeURIComponent(entry.slice(index + 1)),
+                ];
+              }),
+          ),
+        }
+      : {}),
+    teamMaxMembers: Number(process.env.MYAGENT_TEAM_MAX_MEMBERS ?? 8),
+    teamModelConcurrency: Number(
+      process.env.MYAGENT_TEAM_MODEL_CONCURRENCY ?? 4,
+    ),
+    workspaceRoot: resolve(
+      process.env.MYAGENT_WORKSPACE_ROOT ?? `${homedir()}/MyAgent/Workspaces`,
+    ),
+    skillRoot: resolve(
+      process.env.MYAGENT_SKILL_ROOT ?? `${homedir()}/MyAgent/Skills`,
+    ),
+    skillLimits: {
+      fileBytes: Number(process.env.MYAGENT_SKILL_FILE_BYTES ?? 20 * 1024 ** 2),
+      packageBytes: Number(
+        process.env.MYAGENT_SKILL_PACKAGE_BYTES ?? 100 * 1024 ** 2,
+      ),
+      files: Number(process.env.MYAGENT_SKILL_FILES ?? 10000),
+    },
     logger: true,
     agentLimits,
     ...(process.env.MYAGENT_DEV_ORIGIN

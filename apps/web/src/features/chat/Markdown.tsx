@@ -3,17 +3,24 @@
  * 原始 HTML 跳过、图片仅显示替代文字；代码复制读取实际文本，不复制高亮标记。
  */
 import { Check, Copy } from "lucide-react";
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useContext, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
+import {
+  DocumentLink,
+  DocumentNavigation,
+  documentPath,
+} from "../documents/document-links.js";
 // 复制行为由点击触发；状态提示会自动恢复，剪贴板不可用时向用户明确反馈失败。
 export function CopyButton({
   text,
   label = "复制",
+  iconOnly = false,
 }: {
   text: () => string;
   label?: string;
+  iconOnly?: boolean;
 }) {
   const [state, setState] = useState("idle");
   return (
@@ -21,6 +28,7 @@ export function CopyButton({
       className="copy-button"
       type="button"
       aria-label={label}
+      title={label}
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(text());
@@ -32,7 +40,10 @@ export function CopyButton({
       }}
     >
       {state === "copied" ? <Check size={14} /> : <Copy size={14} />}
-      <span>
+      <span
+        className={iconOnly && state === "idle" ? "sr-only" : undefined}
+        aria-live="polite"
+      >
         {state === "copied"
           ? "已复制"
           : state === "failed"
@@ -54,13 +65,16 @@ function CodeBlock({ children }: { children?: ReactNode }) {
           text={() => pre.current?.textContent ?? ""}
         />
       </div>
-      <pre ref={pre}>{children}</pre>
+      <DocumentNavigation.Provider value={null}>
+        <pre ref={pre}>{children}</pre>
+      </DocumentNavigation.Provider>
     </div>
   );
 }
 // 不启用原始 HTML 解析；图片替换成文字以避免隐式外部请求。
 // 链接保留渲染器默认 URL 过滤，并使用 noopener / noreferrer 打开新页面。
 export function Markdown({ content }: { content: string }) {
+  const openDocument = useContext(DocumentNavigation);
   return (
     <div className="markdown">
       <ReactMarkdown
@@ -69,10 +83,24 @@ export function Markdown({ content }: { content: string }) {
         rehypePlugins={[[rehypeHighlight, { detect: false }]]}
         components={{
           pre: CodeBlock,
-          a: ({ children, href }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer">
-              {children}
-            </a>
+          a: ({ children, href }) =>
+            openDocument && href && documentPath(href) ? (
+              <DocumentLink value={href}>{children}</DocumentLink>
+            ) : (
+              <a href={href} target="_blank" rel="noopener noreferrer">
+                {children}
+              </a>
+            ),
+          code: ({ children, className, node, ...props }) => (
+            <code className={className} {...props}>
+              {!className &&
+              typeof children === "string" &&
+              !children.includes("\n") ? (
+                <DocumentLink value={children}>{children}</DocumentLink>
+              ) : (
+                children
+              )}
+            </code>
           ),
           img: ({ alt }) => (
             <span className="muted">[图片：{alt || "未显示"}]</span>

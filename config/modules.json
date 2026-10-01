@@ -4,82 +4,86 @@
     {
       "name": "@myagent/contracts",
       "path": "packages/contracts",
-      "responsibility": "聊天 Session / Message / Run / Settings 与事件 DTO",
-      "status": "chat-v1",
+      "responsibility": "聊天、工作区、文档版本、执行调用、授权、进程和结果 DTO",
+      "status": "tool-execution-v1",
       "allowedDependencies": []
     },
     {
       "name": "@myagent/sdk",
       "path": "packages/sdk",
-      "responsibility": "Web 的 HTTP 命令、SSE 订阅与去重投影",
-      "status": "chat-v1",
+      "responsibility": "HTTP 命令、v1/v2/v3/v4/v5/v6 SSE 去重与执行投影",
+      "status": "tool-execution-v1",
       "allowedDependencies": ["@myagent/contracts"]
     },
     {
       "name": "@myagent/kernel",
       "path": "packages/kernel",
-      "responsibility": "零工具 Chat Runtime、上下文裁剪与 ModelPort",
-      "status": "chat-v1",
+      "responsibility": "单一自主循环、上下文/工具端口、纯 Policy 与资源调度",
+      "status": "tool-execution-v1",
       "allowedDependencies": ["@myagent/contracts"]
     },
     {
       "name": "@myagent/state",
       "path": "packages/state",
-      "responsibility": "聊天仓储、凭证契约及状态语义",
-      "status": "chat-v1",
+      "responsibility": "聊天与执行事实仓储、文档文件端口、检查点和私有配置契约",
+      "status": "tool-execution-v1",
       "allowedDependencies": ["@myagent/contracts"]
     },
     {
       "name": "@myagent/content",
       "path": "packages/content",
-      "responsibility": "记忆、来源材料、检索与版本化产物",
-      "status": "scaffold",
+      "responsibility": "记忆条目校验、来源协议、概览预算与读取端口",
+      "status": "memory-v1",
       "allowedDependencies": ["@myagent/contracts"]
     },
     {
       "name": "@myagent/application",
       "path": "packages/application",
-      "responsibility": "聊天用例、设置快照、幂等提交与运行生命周期",
-      "status": "chat-v1",
-      "allowedDependencies": [
-        "@myagent/contracts",
-        "@myagent/kernel",
-        "@myagent/state",
-        "@myagent/content"
-      ]
-    },
-    {
-      "name": "@myagent/extensions",
-      "path": "packages/extensions",
-      "responsibility": "插件清单、作用域注册、Skill 与 Hook 生命周期",
-      "status": "scaffold",
-      "allowedDependencies": ["@myagent/contracts", "@myagent/kernel"]
-    },
-    {
-      "name": "@myagent/orchestration",
-      "path": "packages/orchestration",
-      "responsibility": "Workflow、调度、后台工作及子任务协调",
-      "status": "scaffold",
-      "allowedDependencies": ["@myagent/contracts"]
-    },
-    {
-      "name": "@myagent/observability",
-      "path": "packages/observability",
-      "responsibility": "观测契约、关联字段与脱敏约定",
-      "status": "scaffold",
-      "allowedDependencies": ["@myagent/contracts"]
-    },
-    {
-      "name": "@myagent/adapters",
-      "path": "packages/adapters",
-      "responsibility": "OpenAI 流式模型、SQLite / Drizzle 与文件凭证",
-      "status": "chat-v1",
+      "responsibility": "运行生命周期、受控执行、人工文档保存、命令策略、审批、隔离核对与 MCP 配置、长期记忆整理与插件生命周期",
+      "status": "tool-execution-v1",
       "allowedDependencies": [
         "@myagent/contracts",
         "@myagent/kernel",
         "@myagent/state",
         "@myagent/content",
+        "@myagent/extensions",
+        "@myagent/orchestration",
         "@myagent/observability"
+      ]
+    },
+    {
+      "name": "@myagent/extensions",
+      "path": "packages/extensions",
+      "responsibility": "Skill/Hook 协议、插件清单兼容与包来源端口",
+      "status": "plugins-v1",
+      "allowedDependencies": ["@myagent/contracts", "@myagent/kernel"]
+    },
+    {
+      "name": "@myagent/orchestration",
+      "path": "packages/orchestration",
+      "responsibility": "轻量团队调度、等待与模型调用公平队列",
+      "status": "teams-v1",
+      "allowedDependencies": ["@myagent/contracts"]
+    },
+    {
+      "name": "@myagent/observability",
+      "path": "packages/observability",
+      "responsibility": "观测端口、关联字段、定点计价和用量聚合",
+      "status": "observability-v1",
+      "allowedDependencies": ["@myagent/contracts"]
+    },
+    {
+      "name": "@myagent/adapters",
+      "path": "packages/adapters",
+      "responsibility": "双协议模型、SQLite v7、原生沙箱、Shell 分析、文件/命令与人工文档原子保存、MCP 和凭证",
+      "status": "tool-execution-v1",
+      "allowedDependencies": [
+        "@myagent/contracts",
+        "@myagent/kernel",
+        "@myagent/state",
+        "@myagent/content",
+        "@myagent/observability",
+        "@myagent/extensions"
       ]
     },
     {
@@ -92,15 +96,15 @@
     {
       "name": "@myagent/web",
       "path": "apps/web",
-      "responsibility": "本地聊天工作台、模型设置与响应式界面",
-      "status": "chat-v1",
+      "responsibility": "聊天、项目文档富文本编辑、MCP 设置、审批、核对和结果分页",
+      "status": "tool-execution-v1",
       "allowedDependencies": ["@myagent/sdk"]
     },
     {
       "name": "@myagent/server",
       "path": "apps/server",
-      "responsibility": "本地 API / SSE、校验、装配、恢复与静态托管",
-      "status": "chat-v1",
+      "responsibility": "本机 API/SSE 与唯一装配点、恢复、维护和静态托管",
+      "status": "tool-execution-v1",
       "allowedDependencies": [
         "@myagent/application",
         "@myagent/kernel",
@@ -123,8 +127,8 @@
     {
       "name": "@myagent/worker",
       "path": "apps/worker",
-      "responsibility": "隔离执行入口；当前仅启动提示",
-      "status": "scaffold",
+      "responsibility": "独立 IPC 监督器与原生沙箱执行入口",
+      "status": "tool-execution-v1",
       "allowedDependencies": ["@myagent/contracts", "@myagent/adapters"]
     }
   ]

@@ -2,6 +2,12 @@
 
 继承 [根 AGENTS.md](../../AGENTS.md)，本文件补充当前目录规则。
 
-固定 WorkflowRunner 与动态 Runtime 分开。只能经 contracts 中立 RunCommandPort 调用应用实现，禁止反向导入 application 或自己另建循环。子任务权限取交集，预算从父级预留；并发、取消、恢复与回执沿用主链路契约。
+固定 WorkflowRunner 与动态 Runtime 分开。只能经 contracts 中立 RunCommandPort 调用应用实现，禁止反向导入 application 或自己另建循环。子任务权限取交集，复用全局并发约束，不设主/子任务累计产出或时间配额；并发、取消、恢复与回执沿用主链路契约。
 
 每轮同步 [当前状态](../../docs/STATUS.md)、相关知识页和 [迭代记录](../../docs/history/README.md)。
+
+## 轻量团队约束
+
+只有主 Agent 创建/停止成员；成员内部会话独立，不出现在用户聊天列表。所有成员复用唯一 ChatService/runAgent；orchestration 不反向导入 application。消息、启动意图、完成回执与检查点必须事务提交，安全边界仅位于完整工具批次后。主任务提交前收拢成员；重启不自动请求模型或重放工具。
+
+共享项目和权限上限，但一次审批不继承；成员不能修改长期记忆或独立贡献提炼。累计产出与耗时仅作统计，不设任务总时限或累计字符上限；全局模型 FIFO 包含摘要；等待不持有业务槽位。不得将入队表述为已读取，不能把成员成功视为任务质量验收。SQLite v11 / 团队 SSE v6，旧事件继续兼容。

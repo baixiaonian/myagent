@@ -1,0 +1,1 @@
+{"schemaVersion":1,"hooks":[{"id":"report-path","event":"PreToolUse","tools":["write_file"],"packagePath":"./scripts","entry":"check-report.mjs","interpreter":"node","enabled":true,"args":[],"timeoutMs":30000,"permissions":{"writePaths":[],"networkDomains":[]}}]}

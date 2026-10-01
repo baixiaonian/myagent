@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1110" viewBox="0 0 1440 1110" role="img" aria-labelledby="title desc">
+<title id="title">MyAgent 工具执行的权限与隔离</title>
+<desc id="desc">资源级权限与命令级权限分别检查，合并后允许、询问或拒绝；用户批准绑定本次操作，派发前复核，OS 沙箱限制真实执行。</desc>
+<rect width="1440" height="1110" fill="#FFFFFF"/>
+<text x="48" y="34" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="17" font-weight="400" fill="#647488">MYAGENT  /  TOOL EXECUTION</text>
+<text x="48" y="79" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="44" font-weight="600" fill="#1F3042">工具执行的权限与隔离</text>
+<text x="48" y="148" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="400" fill="#647488">命令获准启动，也必须留在已授权的资源范围内。</text>
+<path d="M48 201H1392" fill="none" stroke="#E7EDF2"/>
+<rect x="48" y="229" width="44" height="32" rx="8" fill="#EFF3F6" stroke="#EFF3F6" stroke-width="1"/>
+<text x="58.0" y="234" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#647488">01</text>
+<text x="108" y="230" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="600" fill="#1F3042">权限判断</text>
+<text x="48" y="274" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#647488">资源与命令，分别检查</text>
+<rect x="536" y="229" width="44" height="32" rx="8" fill="#EFF3F6" stroke="#EFF3F6" stroke-width="1"/>
+<text x="546.0" y="234" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#647488">02</text>
+<text x="596" y="230" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="600" fill="#1F3042">审批决策</text>
+<text x="536" y="274" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#647488">需要授权时，交给用户</text>
+<rect x="962" y="229" width="44" height="32" rx="8" fill="#EFF3F6" stroke="#EFF3F6" stroke-width="1"/>
+<text x="972.0" y="234" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#647488">03</text>
+<text x="1022" y="230" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="600" fill="#1F3042">隔离执行</text>
+<text x="962" y="274" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#647488">复核通过后，进入受控环境</text>
+<rect x="48" y="325" width="390" height="218" rx="16" fill="#F7FAFD" stroke="#DCE6F0" stroke-width="1"/>
+<rect x="48" y="579" width="390" height="333" rx="16" fill="#F7FAFD" stroke="#DCE6F0" stroke-width="1"/>
+<rect x="536" y="325" width="330" height="160" rx="16" fill="#FFFFFF" stroke="#DCE3E9" stroke-width="1"/>
+<rect x="536" y="563" width="330" height="248" rx="16" fill="#FFFCF6" stroke="#E9DDC6" stroke-width="1"/>
+<rect x="536" y="858" width="330" height="54" rx="12" fill="#FCF5F4" stroke="#F0DFDC" stroke-width="1"/>
+<rect x="962" y="325" width="430" height="160" rx="16" fill="#FFFFFF" stroke="#DCE3E9" stroke-width="1"/>
+<rect x="962" y="563" width="430" height="349" rx="16" fill="#F3FAF6" stroke="#CEE5D7" stroke-width="1"/>
+<rect x="962" y="958" width="430" height="56" rx="12" fill="#FFFFFF" stroke="#CEE5D7" stroke-width="1"/>
+<polygon points="536,402 525.0,397.0 525.0,407.0" fill="#3566A8"/>
+<polyline points="438,430 485,430 485,402 536,402" fill="none" stroke="#3566A8" stroke-width="2"/>
+<polygon points="536,402 525.0,397.0 525.0,407.0" fill="#3566A8"/>
+<polyline points="438,744 485,744 485,402 536,402" fill="none" stroke="#3566A8" stroke-width="2"/>
+<polygon points="962,402 951.0,397.0 951.0,407.0" fill="#26755B"/>
+<polyline points="866,402 962,402" fill="none" stroke="#26755B" stroke-width="2"/>
+<polygon points="701,563 706.0,552.0 696.0,552.0" fill="#9B691D"/>
+<polyline points="701,485 701,563" fill="none" stroke="#9B691D" stroke-width="2"/>
+<polygon points="962,402 951.0,397.0 951.0,407.0" fill="#26755B"/>
+<polyline points="866,685 916,685 916,402 962,402" fill="none" stroke="#26755B" stroke-width="2"/>
+<polygon points="701,858 706.0,847.0 696.0,847.0" fill="#AC4A49"/>
+<polyline points="701,811 701,858" fill="none" stroke="#AC4A49" stroke-width="2"/>
+<polygon points="1177,563 1182.0,552.0 1172.0,552.0" fill="#26755B"/>
+<polyline points="1177,485 1177,563" fill="none" stroke="#26755B" stroke-width="2"/>
+<polygon points="1177,958 1182.0,947.0 1172.0,947.0" fill="#26755B"/>
+<polyline points="1177,912 1177,958" fill="none" stroke="#26755B" stroke-width="2"/>
+<rect x="884" y="363" width="62" height="32" rx="8" fill="#EDF6F0" stroke="#EDF6F0" stroke-width="1"/>
+<text x="898.0" y="368" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="17" font-weight="400" fill="#26755B">允许</text>
+<rect x="651" y="508" width="100" height="32" rx="8" fill="#FBF2E1" stroke="#FBF2E1" stroke-width="1"/>
+<text x="667.0" y="513" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="17" font-weight="400" fill="#9B691D">需要审批</text>
+<rect x="884" y="618" width="62" height="32" rx="8" fill="#EDF6F0" stroke="#EDF6F0" stroke-width="1"/>
+<text x="898.0" y="623" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="17" font-weight="400" fill="#26755B">批准</text>
+<rect x="1210" y="509" width="112" height="32" rx="8" fill="#EDF6F0" stroke="#EDF6F0" stroke-width="1"/>
+<text x="1232.0" y="514" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="17" font-weight="400" fill="#26755B">复核通过</text>
+<text x="72" y="347" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="600" fill="#3566A8">资源级权限</text>
+<text x="72" y="391" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="600" fill="#1F3042">能访问哪些资源？</text>
+<text x="72" y="430" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#647488">目录读写 / 网络域名 / MCP</text>
+<path d="M72 465H414" fill="none" stroke="#E7EDF2"/>
+<text x="72" y="482" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#1F3042">工作区内文件默认允许</text>
+<text x="72" y="514" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#647488">跨界查授权 · 显式拒绝优先</text>
+<text x="72" y="601" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="600" fill="#3566A8">命令级权限</text>
+<rect x="272" y="601" width="142" height="32" rx="8" fill="#EAF0F8" stroke="#EAF0F8" stroke-width="1"/>
+<text x="281.0" y="606" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="16" font-weight="400" fill="#3566A8">exec_command</text>
+<text x="72" y="647" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="23" font-weight="600" fill="#1F3042">这条命令能启动吗？</text>
+<text x="72" y="688" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#647488">解析完整 Shell，逐段检查</text>
+<text x="72" y="722" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#647488">低风险自动；其他默认询问</text>
+<path d="M72 759H414" fill="none" stroke="#E7EDF2"/>
+<text x="72" y="775" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="600" fill="#1F3042">用户级 + 项目级规则</text>
+<text x="72" y="809" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#3566A8">[&quot;git&quot;, &quot;status&quot;] → allow</text>
+<text x="72" y="840" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="17" font-weight="400" fill="#647488">参数数组前缀匹配 · 自定义示例</text>
+<rect x="72" y="870" width="342" height="32" rx="8" fill="#EAF0F8" stroke="#EAF0F8" stroke-width="1"/>
+<text x="150.5" y="875" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#3566A8">拒绝  &gt;  询问  &gt;  允许</text>
+<text x="560" y="350" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="25" font-weight="600" fill="#1F3042">合并两项检查结果</text>
+<text x="560" y="393" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#26755B">全部获准 → 可继续</text>
+<text x="560" y="431" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#AC4A49">任何拒绝 → 不执行</text>
+<text x="560" y="587" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="600" fill="#9B691D">用户审批</text>
+<text x="560" y="631" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#1F3042">展示命令、目录、资源和原因</text>
+<path d="M560 668H842" fill="none" stroke="#ECE3D2"/>
+<text x="560" y="686" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="600" fill="#1F3042">命令：仅批准本次调用</text>
+<text x="560" y="728" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#647488">纯资源可选授权范围</text>
+<text x="560" y="762" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#1F3042">本次 · 会话 · 工作区</text>
+<text x="598.0" y="874" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#AC4A49">拒绝 / 过期 → 不执行</text>
+<text x="986" y="350" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="27" font-weight="600" fill="#1F3042">执行前再复核</text>
+<text x="986" y="396" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#647488">绑定调用、参数、资源和版本</text>
+<text x="986" y="436" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#647488">排队后 / 派发前，重新检查</text>
+<text x="986" y="588" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="28" font-weight="600" fill="#26755B">OS 隔离沙箱</text>
+<text x="986" y="634" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#647488">Seatbelt  /  bubblewrap</text>
+<path d="M986 671H1368" fill="none" stroke="#D8E8DD"/>
+<text x="986" y="691" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400" fill="#1F3042">限制目录读取与写入</text>
+<text x="986" y="730" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400" fill="#1F3042">只允许授权网络域名</text>
+<text x="986" y="769" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="400" fill="#1F3042">凭证、数据、工具链受保护</text>
+<text x="986" y="809" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#647488">固定 PATH · 独立 HOME / TMP</text>
+<rect x="986" y="860" width="382" height="32" rx="8" fill="#E3F0E7" stroke="#E3F0E7" stroke-width="1"/>
+<text x="1070.5" y="865" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="20" font-weight="400" fill="#26755B">隔离不可用 → 拒绝执行</text>
+<text x="1037.5" y="975" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="22" font-weight="600" fill="#26755B">受控执行 → 结果反馈给模型</text>
+<text x="48" y="950" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="21" font-weight="400" fill="#1F3042">本机沙箱：本地文件、命令与 stdio MCP</text>
+<text x="48" y="986" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="19" font-weight="400" fill="#647488">HTTP MCP 的远端内部执行，由远端负责隔离。</text>
+<path d="M48 1040H1392" fill="none" stroke="#E7EDF2"/>
+<text x="48" y="1062" dominant-baseline="text-before-edge" font-family="Hiragino Sans GB,PingFang SC,Microsoft YaHei,sans-serif" font-size="18" font-weight="400" fill="#647488">交互程序获准启动后，write_stdin 不再逐次审批；权限放行不扩大沙箱资源范围。</text>
+</svg>

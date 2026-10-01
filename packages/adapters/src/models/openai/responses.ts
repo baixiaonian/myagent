@@ -5,78 +5,114 @@
 import {
   AppError,
   type JsonValue,
+  type ObservationScope,
   type ToolCall,
   type ToolDefinition,
   type Usage,
 } from "@myagent/contracts";
 import type { ModelEvent, ModelMessage, ModelPort } from "@myagent/kernel";
+import { estimateTokens } from "@myagent/kernel";
+import type { ModelTransportObserver } from "@myagent/observability";
 import type OpenAI from "openai";
-import { client, json, modelError } from "./shared.js";
+import { capturedFetch, reportedUsage } from "../../observability/transport.js";
+import {
+  client,
+  contextLimitError,
+  json,
+  modelError,
+  stableTools,
+} from "./shared.js";
 export class OpenAIResponsesModel implements ModelPort {
   private readonly client: OpenAI;
   constructor(
     baseUrl: string,
     apiKey: string,
     private readonly model: string,
+    private readonly telemetry?: ModelTransportObserver,
   ) {
     this.client = client(baseUrl, apiKey);
+  }
+  /** 估算和发送共用请求构造，避免 Responses Item 与展示正文重复计数。 */
+  private request(
+    messages: readonly ModelMessage[],
+    tools: readonly ToolDefinition[],
+  ) {
+    const input: unknown[] = [];
+    for (const message of messages) {
+      const saved = message.continuation as
+        | { protocol?: string; items?: JsonValue[] }
+        | undefined;
+      if (
+        message.role === "assistant" &&
+        saved?.protocol === "responses" &&
+        saved.items
+      )
+        input.push(...saved.items);
+      else if (message.role === "tool")
+        input.push({
+          type: "function_call_output",
+          call_id: message.callId,
+          output: message.content,
+        });
+      else {
+        if (message.content)
+          input.push({ role: message.role, content: message.content });
+        for (const call of message.toolCalls ?? [])
+          input.push({
+            type: "function_call",
+            call_id: call.id,
+            name: call.name,
+            arguments: call.arguments,
+          });
+      }
+    }
+    return {
+      model: this.model,
+      input: input as OpenAI.Responses.ResponseInput,
+      stream: true as const,
+      store: false,
+      include: ["reasoning.encrypted_content" as const],
+      ...(tools.length
+        ? {
+            tools: stableTools(tools).map((t) => ({
+              type: "function" as const,
+              name: t.name,
+              description: t.description,
+              parameters: t.parameters,
+              strict: false,
+            })),
+          }
+        : {}),
+    };
+  }
+  estimateInput(
+    messages: readonly ModelMessage[],
+    tools: readonly ToolDefinition[] = [],
+  ): number {
+    return estimateTokens(this.request(messages, tools));
   }
   async *stream(
     messages: readonly ModelMessage[],
     signal: AbortSignal,
     tools: readonly ToolDefinition[] = [],
+    scope: ObservationScope = {},
   ): AsyncIterable<ModelEvent> {
     try {
-      const input: unknown[] = [];
-      for (const message of messages) {
-        const saved = message.continuation as
-          | { protocol?: string; items?: JsonValue[] }
-          | undefined;
-        if (
-          message.role === "assistant" &&
-          saved?.protocol === "responses" &&
-          saved.items
-        )
-          input.push(...saved.items);
-        else if (message.role === "tool")
-          input.push({
-            type: "function_call_output",
-            call_id: message.callId,
-            output: message.content,
-          });
-        else {
-          if (message.content)
-            input.push({ role: message.role, content: message.content });
-          for (const call of message.toolCalls ?? [])
-            input.push({
-              type: "function_call",
-              call_id: call.id,
-              name: call.name,
-              arguments: call.arguments,
-            });
-        }
-      }
-      const stream = await this.client.responses.create(
-        {
-          model: this.model,
-          input: input as OpenAI.Responses.ResponseInput,
-          stream: true,
-          store: false,
-          include: ["reasoning.encrypted_content"],
-          ...(tools.length
-            ? {
-                tools: tools.map((t) => ({
-                  type: "function" as const,
-                  name: t.name,
-                  description: t.description,
-                  parameters: t.parameters,
-                  strict: false,
-                })),
-              }
-            : {}),
-        },
-        { signal },
-      );
+      const transport =
+        this.telemetry && scope.callId
+          ? capturedFetch(
+              this.telemetry,
+              scope.callId,
+              globalThis.fetch,
+              signal,
+            )
+          : undefined;
+      const sdk = transport
+        ? this.client.withOptions({ fetch: transport })
+        : this.client;
+      const stream = await sdk.responses.create(this.request(messages, tools), {
+        signal,
+      });
       let terminal: OpenAI.Responses.Response | undefined;
       let streamed = "";
       let streamedExtra = 0;
@@ -84,6 +120,17 @@ export class OpenAIResponsesModel implements ModelPort {
       const argumentsByItem = new Map<string, string>();
       try {
         for await (const event of stream) {
+          if (scope.callId && "response" in event)
+            this.telemetry?.metadata(scope.callId, {
+              ...(event.response.usage
+                ? { usage: reportedUsage(event.response.usage, "responses") }
+                : {}),
+              model: event.response.model,
+              responseId: event.response.id,
+              ...(event.response.service_tier
+                ? { serviceTier: event.response.service_tier }
+                : {}),
+            });
           // completed 是最后的语义事件；迟到参数或第二个终态不能重新激活已完成响应。
           if (terminal)
             throw new AppError(
@@ -124,10 +171,13 @@ export class OpenAIResponsesModel implements ModelPort {
           ) {
             terminal = event.response;
           } else if (event.type === "error")
-            throw new AppError(
-              "model_request",
-              "Responses 请求失败，请检查接口与模型配置。",
-              502,
+            throw (
+              contextLimitError(event.code) ??
+              new AppError(
+                "model_request",
+                "Responses 请求失败，请检查接口与模型配置。",
+                502,
+              )
             );
         }
       } finally {
@@ -140,10 +190,13 @@ export class OpenAIResponsesModel implements ModelPort {
           502,
         );
       if (terminal.status === "failed")
-        throw new AppError(
-          "model_request",
-          "Responses 模型执行失败，请检查接口与模型配置。",
-          502,
+        throw (
+          contextLimitError(terminal.error?.code) ??
+          new AppError(
+            "model_request",
+            "Responses 模型执行失败，请检查接口与模型配置。",
+            502,
+          )
         );
       let content = "";
       const calls: ToolCall[] = [];
@@ -202,13 +255,8 @@ export class OpenAIResponsesModel implements ModelPort {
           JSON.stringify(items).length - content.length - streamedExtra,
         ),
       };
-      const usage: Usage | null = terminal.usage
-        ? {
-            inputTokens: terminal.usage.input_tokens,
-            outputTokens: terminal.usage.output_tokens,
-            totalTokens: terminal.usage.total_tokens,
-          }
-        : null;
+      const usage: Usage | null = reportedUsage(terminal.usage, "responses");
+      transport?.complete();
       yield {
         type: "done",
         finishReason:

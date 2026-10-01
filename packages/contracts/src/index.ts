@@ -6,8 +6,16 @@
 import type { ApiProtocol, RunStep } from "./agent.js";
 
 export * from "./agent.js";
+export * from "./execution.js";
+export * from "./worker.js";
 export type RunStatus =
   | "running"
+  | "waiting_agents"
+  | "waiting_context"
+  | "waiting_approval"
+  | "waiting_reconciliation"
+  | "recoverable"
+  | "cleaning"
   | "succeeded"
   | "cancelled"
   | "failed"
@@ -42,9 +50,16 @@ export interface Session {
   revision: number;
   createdAt: string;
   updatedAt: string;
+  workspaceId?: string | null;
 }
 // replyToId 把多个候选回答关联到同一用户问题，重新生成无需复制问题。
 export interface Message {
+  origin?: {
+    kind: "agent";
+    agentId: string;
+    rootRunId: string;
+    messageId: string;
+  } | null;
   id: string;
   sessionId: string;
   runId: string;
@@ -58,9 +73,15 @@ export interface Usage {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  cacheReadTokens?: number;
+  cacheWriteTokens?: number;
+  reasoningTokens?: number;
 }
 // 一次发送或重新生成的持久执行记录；原答引用用于成功替换，指纹用于识别重复命令。
+/** 用户选择的执行模式；缺失时保持标准权限。模型和工具参数不能更改本轮模式。 */
+export type ExecutionMode = "standard" | "full_access";
 export interface Run {
+  executionMode?: ExecutionMode;
   id: string;
   sessionId: string;
   requestId: string;
@@ -81,6 +102,8 @@ export interface Run {
   endedAt: string | null;
 }
 export interface ModelSettings {
+  contextWindowTokens?: number;
+  outputReserveTokens?: number;
   apiProtocol: ApiProtocol;
   baseUrl: string;
   model: string;
@@ -96,6 +119,8 @@ export interface PublicSettings extends ModelSettings {
 }
 // apiKey 缺省表示保留；clearKey 明确表示删除。两者不能同时提交。
 export interface SettingsInput {
+  contextWindowTokens?: number;
+  outputReserveTokens?: number;
   /** 老客户端省略时保留原协议；旧数据库缺省为 Chat Completions。 */
   apiProtocol?: ApiProtocol;
   baseUrl: string;
@@ -106,16 +131,24 @@ export interface SettingsInput {
   clearKey?: boolean;
 }
 export interface RunInput {
+  /** 仅创建新 Run 时生效；恢复继续使用原 Run 的持久模式。 */
+  executionMode?: ExecutionMode;
+  skillIds?: string[];
   requestId: string;
   expectedRevision: number;
   content: string;
 }
 export interface RegenerateInput {
+  /** 仅创建新 Run 时生效；恢复继续使用原 Run 的持久模式。 */
+  executionMode?: ExecutionMode;
+  skillIds?: string[];
   requestId: string;
   expectedRevision: number;
+  confirmSideEffects?: boolean;
 }
 // cursor 对应这个完整快照已经包含的最后事件；随后只应用更大的事件序号。
 export interface SessionSnapshot {
+  plugins?: import("./plugins.js").PluginReference[];
   steps?: RunStep[];
   session: Session;
   messages: Message[];
@@ -128,6 +161,10 @@ export interface RunAccepted {
   snapshot: SessionSnapshot;
 }
 export type EventData =
+  | { type: "team.updated"; runId: string }
+  | { type: "hook.updated"; runId: string }
+  | { type: "context.updated"; runId: string }
+  | { type: "execution.updated"; runId: string }
   | { type: "step.updated"; step: RunStep }
   | { type: "step.delta"; stepId: string; delta: string }
   | { type: "session.updated"; session: Session }
@@ -136,7 +173,7 @@ export type EventData =
   | { type: "run.updated"; run: Run };
 // seq 在单会话内单调递增；schemaVersion 是事件格式版本，不是会话 revision。
 export type ChatEvent = EventData & {
-  schemaVersion: 1 | 2;
+  schemaVersion: 1 | 2 | 3 | 4 | 5 | 6;
   sessionId: string;
   seq: number;
   createdAt: string;
@@ -149,3 +186,14 @@ export const LIMITS = {
   timeoutMs: 120000,
   systemCharacters: 4000,
 } as const;
+
+export * from "./commands.js";
+export * from "./context.js";
+export * from "./documents.js";
+export * from "./hooks.js";
+export * from "./memory.js";
+export * from "./observability.js";
+export * from "./plugins.js";
+export * from "./projects.js";
+export * from "./skills.js";
+export * from "./teams.js";

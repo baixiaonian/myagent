@@ -15,6 +15,7 @@ import type {
   ChatEvent,
   Run,
 } from "../../packages/contracts/src/index.js";
+import { isActiveRun } from "../../packages/contracts/src/index.js";
 import { applyEvent } from "../../packages/sdk/src/index.js";
 import { mockProvider } from "../chat/provider.js";
 
@@ -43,8 +44,8 @@ function configure(apiProtocol: ApiProtocol, model = "test") {
 }
 async function end(id: string) {
   await expect
-    .poll(() => app.store.getRun(id).status, { timeout: 5000 })
-    .not.toBe("running");
+    .poll(() => isActiveRun(app.store.getRun(id).status), { timeout: 5000 })
+    .toBe(false);
   return app.store.getRun(id);
 }
 describe.each<ApiProtocol>(["responses", "chat_completions"])(
@@ -277,6 +278,7 @@ it("v1 migration preserves old config, history and events, and marks unfinished 
 describe("responses failure boundaries", () => {
   it.each([
     ["unauthorized", "model_auth"],
+    ["payment", "model_payment_required"],
     ["missing", "model_not_found"],
     ["limited", "model_rate_limit"],
     ["bad", "model_request"],

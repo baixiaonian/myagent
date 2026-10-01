@@ -17,8 +17,33 @@ export interface CapturedRequest {
   stream: boolean;
   [key: string]: unknown;
 }
+/** 背景资料也是 user 角色，但不能算作用户新问题或把工具批次归入错误轮次。 */
+function userQuestion(message: { role: string; content: string }): boolean {
+  return (
+    message.role === "user" &&
+    ![
+      "可用技能目录：",
+      "使用 search_skills",
+      "[本轮技能说明",
+      "[历史资料摘要",
+      "[执行状态更新",
+      "[团队消息",
+      "[创建成员时共享的背景资料",
+    ].some((prefix) => message.content.startsWith(prefix))
+  );
+}
 /** 仅用于协议与浏览器验收，不代表真实模型能力。 */
-export async function mockProvider(port = 0) {
+export async function mockProvider(
+  port = 0,
+  toolScenario?: (
+    question: string,
+    results: { content: string }[],
+    definitions: unknown,
+  ) => {
+    calls: { id: string; name: string; arguments: string }[];
+    text: string;
+  } | null,
+) {
   const requests: CapturedRequest[] = [];
   let cancelled = 0;
   const server = createServer(async (request, response) => {
@@ -50,13 +75,16 @@ export async function mockProvider(port = 0) {
                   : "",
         }));
     requests.push(input);
-    const question =
-      input.messages.findLast((m) => m.role === "user")?.content ?? "";
+    const question = input.messages.findLast(userQuestion)?.content ?? "";
     const model = input.model;
     // 通过模型名选择固定失败场景；故意在上游错误中回显假鉴权信息，检验应用是否正确脱敏。
-    const status = { unauthorized: 401, missing: 404, limited: 429, bad: 400 }[
-      model
-    ];
+    const status = {
+      unauthorized: 401,
+      payment: 402,
+      missing: 404,
+      limited: 429,
+      bad: 400,
+    }[model];
     if (status) {
       response.writeHead(status, { "Content-Type": "application/json" }).end(
         JSON.stringify({
@@ -96,7 +124,7 @@ export async function mockProvider(port = 0) {
         ? "OK"
         : question.includes("Markdown")
           ? markdownContent
-          : `收到：${question}。这是第 ${input.messages.filter((m) => m.role === "user").length} 轮问答。`;
+          : `收到：${question}。这是第 ${input.messages.filter(userQuestion).length} 轮问答。`;
     const chunks = Array.from(text.match(/.{1,8}|\n/gs) ?? []);
     const slow = model === "slow" || question.includes("慢速");
     const delay = slow ? 180 : 3;
@@ -123,14 +151,23 @@ export async function mockProvider(port = 0) {
       status: "completed",
       content: [{ type: "output_text", text: value, annotations: [] }],
     });
-    if (question.includes("Agent") && input.tools) {
+    const lastQuestion = input.messages.findLastIndex(userQuestion);
+    const scenario = toolScenario?.(
+      question,
+      input.messages
+        .slice(lastQuestion + 1)
+        .filter((message) => message.role === "tool"),
+      input.tools,
+    );
+    if ((question.includes("Agent") || scenario) && (input.tools || scenario)) {
       // 三次模型请求：先计划和取时间，再修改计划，最后回答；测试控制器不模拟真实推理。
-      const lastUser = input.messages.findLastIndex((m) => m.role === "user");
+      const lastUser = input.messages.findLastIndex(userQuestion);
       const results = input.messages
         .slice(lastUser + 1)
         .filter((m) => m.role === "tool");
       const calls =
-        results.length === 0
+        scenario?.calls ??
+        (results.length === 0
           ? [
               {
                 id: "plan1",
@@ -162,10 +199,12 @@ export async function mockProvider(port = 0) {
                   }),
                 },
               ]
-            : [];
-      const text = calls.length
-        ? "正在处理任务。"
-        : "Agent 任务已完成，已查询时间并更新计划。";
+            : []);
+      const text =
+        scenario?.text ??
+        (calls.length
+          ? "正在处理任务。"
+          : "Agent 任务已完成，已查询时间并更新计划。");
       schedule(
         () => {
           if (responses) {
